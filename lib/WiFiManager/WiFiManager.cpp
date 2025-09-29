@@ -11,6 +11,9 @@ namespace {
 
     const char *STA_SSID = "LEO_2_4G";
     const char *STA_PSWD = "Leovegildocesar1#";
+
+    constexpr uint16_t RSSI_UPDATE_INTERVAL = 2000;
+    constexpr uint16_t RECONNECT_INTERVAL = 15000;
 }
 
 WiFiManager::WiFiManager() {}
@@ -28,30 +31,31 @@ void WiFiManager::setupAP() {
 
 void WiFiManager::setupSTA() {
     WiFi.begin(STA_SSID, STA_PSWD);
-    m_lastReconAttempt = micros();
+    m_lastReconAttempt = millis();
 }
 
 void WiFiManager::update() {
     m_staStatus = WiFi.status();
 
     if (m_staStatus == WL_CONNECTED) {
-        if (micros() % 2000000 == 0) {
+        if (millis() - m_lastRssiCheck > RSSI_UPDATE_INTERVAL) {
             m_rssi = WiFi.RSSI();
+            m_lastRssiCheck = millis();
         }
     } else {
         m_rssi = 0;
 
-        if (micros() - m_lastReconAttempt > 15000000) {
+        if (millis() - m_lastReconAttempt > RECONNECT_INTERVAL) {
             WiFi.reconnect();
-            m_lastReconAttempt = micros();
+            m_lastReconAttempt = millis();
         }
     }
 }
 
-const int8_t WiFiManager::getRSSI() {
+int8_t WiFiManager::getRSSI() const {
     return m_rssi;
 }
 
-const bool WiFiManager::isStaConnected() {
+bool WiFiManager::isStaConnected() const {
     return m_staStatus == WL_CONNECTED;
 }

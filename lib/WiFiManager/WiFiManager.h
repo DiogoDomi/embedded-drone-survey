@@ -9,6 +9,7 @@ class WiFiManager {
         int8_t m_rssi{};
         uint8_t m_staStatus{};
         unsigned long m_lastReconAttempt{};
+        unsigned long m_lastRssiCheck{};
 
     private:
 
@@ -20,8 +21,8 @@ class WiFiManager {
         WiFiManager();
         void begin();
         void update();
-        const int8_t getRSSI();
-        const bool isStaConnected();
+        int8_t getRSSI() const;
+        bool isStaConnected() const;
 
 };
 

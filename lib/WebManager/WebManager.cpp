@@ -1,9 +1,7 @@
 #include "WebManager.h"
 #include <LittleFS.h>
 
-namespace {
-    static constexpr uint16_t JSON_SIZE = 256;
-}
+namespace { constexpr uint16_t JSON_SIZE = 256; }
 
 WebManager::WebManager(AsyncWebServer& server, AsyncWebSocket& socket) :
     m_server(server),
@@ -54,6 +52,7 @@ void WebManager::setupSocket() {
 void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len) {
     switch (type) {
         case AwsEventType::WS_EVT_CONNECT:
+            onConnectSendTelemetry(client);
             break;
         case AwsEventType::WS_EVT_DATA:
             handleWebSocketMessage(arg, data, len);
@@ -64,8 +63,23 @@ void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* cl
         case AwsEventType::WS_EVT_DISCONNECT:
             break;
     }
-
 }
+
+void WebManager::onConnectSendTelemetry(AsyncWebSocketClient* client) {
+    char output[JSON_SIZE];
+    JsonDocument doc;
+
+    doc["state"] = static_cast<uint8_t>(m_telemetryCache.state);
+    doc["rssi"] = m_telemetryCache.rssi;
+    doc["lat"] = m_telemetryCache.gps.lat;
+    doc["lon"] = m_telemetryCache.gps.lon;
+    doc["alt"] = m_telemetryCache.gps.alt;
+
+    serializeJson(doc, output, JSON_SIZE);
+
+    client->text(output);
+}
+
 void WebManager::handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
     AwsFrameInfo* info = static_cast<AwsFrameInfo*>(arg);
 
@@ -91,18 +105,25 @@ void WebManager::update() {
     m_socket.cleanupClients();
 }
 
-void WebManager::sendTelemetry(const GPSData& gps, int8_t rssi) {
-    JsonDocument doc;
-    char buffer[JSON_SIZE];
+void WebManager::cacheTelemetry(const GPSData& gps, int8_t rssi, State state) {
+    m_telemetryCache.state = state;
+    m_telemetryCache.rssi = rssi;
+    m_telemetryCache.gps = gps;
+}
 
+void WebManager::sendTelemetry(const GPSData& gps, int8_t rssi, State state) const {
+    char output[JSON_SIZE]{};
+    JsonDocument doc{};
+
+    doc["state"] = static_cast<uint8_t>(state);
     doc["rssi"] = rssi;
     doc["lat"] = gps.lat;
     doc["lon"] = gps.lon;
     doc["alt"] = gps.alt;
-    doc.shrinkToFit();
-    serializeJson(doc, buffer, JSON_SIZE);
 
-    m_socket.textAll(buffer);
+    serializeJson(doc, output, JSON_SIZE);
+
+    m_socket.textAll(output);
 }
 
 JoyData WebManager::getData() const {

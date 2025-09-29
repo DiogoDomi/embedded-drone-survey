@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Drone Controller</title>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script src="script.js"></script>
+    </head>
+    <body>
+
+        <div class="container-data">
+
+            <div class="container-data-state">
+
+                <div class="state-box" id="stateBox">
+                    <p class="state-title"><strong>STATE</strong></p>
+                    <p class="reading"><span id="state">-</span></p>
+                </div>
+
+            </div>
+
+            <div class="container-data-sensors">
+
+                <div class="sensor-box">
+                    <p class="sensor-title"><strong>RSSI</strong></p>
+                    <p class="reading"><span id="rssi"></span> dBm</p>
+                </div>
+
+                <div class="sensor-box">
+                    <p class="sensor-title"><strong>LAT</strong></p>
+                    <p class="reading">
+                        <span id="lat"></span>
+                        <span id="latdir"></span>
+                    °</p>
+                </div>
+
+                <div class="sensor-box">
+                    <p class="sensor-title"><strong>LON</strong></p>
+                    <p class="reading">
+                        <span id="lon"></span>
+                        <span id="londir"></span>
+                    °</p>
+                </div>
+
+                <div class="sensor-box">
+                    <p class="sensor-title"><strong>ALT</strong></p>
+                    <p class="reading"><span id="alt"></span> m</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="container-canvas">
+
+            <canvas class="joystick" id="ljoy" width="200px" height="200px"></canvas>
+            <canvas class="joystick" id="rjoy" width="200px" height="200px"></canvas>
+
+        </div>
+
+    </body>
+</html>

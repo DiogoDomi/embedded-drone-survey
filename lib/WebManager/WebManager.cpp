@@ -1,0 +1,118 @@
+#include "WebManager.h"
+#include <LittleFS.h>
+
+namespace {
+    static constexpr uint16_t JSON_SIZE = 256;
+}
+
+WebManager::WebManager(AsyncWebServer& server, AsyncWebSocket& socket) :
+    m_server(server),
+    m_socket(socket)
+    {}
+
+void WebManager::begin() {
+    LittleFS.begin();
+
+    setupServer();
+    setupSocket();
+
+    m_server.begin();
+}
+
+void WebManager::setupServer() {
+    m_server.on(
+        "/",
+        WebRequestMethod::HTTP_GET,
+        [](AsyncWebServerRequest* request) {
+            request->send(
+                LittleFS,
+                "/index.html",
+                "text/html"
+            );
+        }
+    );
+
+    m_server.serveStatic("/", LittleFS, "/");
+}
+
+void WebManager::setupSocket() {
+    m_socket.onEvent(
+        [this](
+            AsyncWebSocket* socket,
+            AsyncWebSocketClient* client,
+            AwsEventType type,
+            void* arg,
+            uint8_t* data,
+            size_t len) {
+                onEventHandler(socket, client, type, arg, data, len);
+            }        
+    );
+
+    m_server.addHandler(&m_socket);
+}
+
+void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len) {
+    switch (type) {
+        case AwsEventType::WS_EVT_CONNECT:
+            break;
+        case AwsEventType::WS_EVT_DATA:
+            handleWebSocketMessage(arg, data, len);
+            break;
+        case AwsEventType::WS_EVT_PONG:
+        case AwsEventType::WS_EVT_PING:
+        case AwsEventType::WS_EVT_ERROR:
+        case AwsEventType::WS_EVT_DISCONNECT:
+            break;
+    }
+
+}
+void WebManager::handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
+    AwsFrameInfo* info = static_cast<AwsFrameInfo*>(arg);
+
+    if (info->final && info->index == 0 && info->len == len && info->opcode == AwsFrameType::WS_TEXT) {
+        data[len] = 0;
+        char* msg = (char*)data;
+
+        DeserializationError docHasError =  deserializeJson(m_requestDoc, msg);
+
+        if (docHasError) { return; }
+
+        if (!m_requestDoc["state"].isNull()) {
+            m_stateChangeRequest = true; 
+        }
+        m_data.lx = m_requestDoc["lx"];
+        m_data.ly = m_requestDoc["ly"];
+        m_data.rx = m_requestDoc["rx"];
+        m_data.ry = m_requestDoc["ry"];
+    }
+}
+
+void WebManager::update() {
+    m_socket.cleanupClients();
+}
+
+void WebManager::sendTelemetry(const GPSData& gps, int8_t rssi) {
+    JsonDocument doc;
+    char buffer[JSON_SIZE];
+
+    doc["rssi"] = rssi;
+    doc["lat"] = gps.lat;
+    doc["lon"] = gps.lon;
+    doc["alt"] = gps.alt;
+    doc.shrinkToFit();
+    serializeJson(doc, buffer, JSON_SIZE);
+
+    m_socket.textAll(buffer);
+}
+
+JoyData WebManager::getData() const {
+    return m_data;
+}
+
+bool WebManager::consumeStateChangeRequest() {
+    if (m_stateChangeRequest) {
+        m_stateChangeRequest = false;
+        return true;
+    }
+    return false;
+}

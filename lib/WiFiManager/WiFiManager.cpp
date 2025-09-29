@@ -11,13 +11,15 @@ namespace {
 
     const char *STA_SSID = "LEO_2_4G";
     const char *STA_PSWD = "Leovegildocesar1#";
-
-    const IPAddress STA_LOCAL_IP(192, 168, 0, 200);
-    const IPAddress STA_GATEWAY(192, 168, 0, 1);
-    const IPAddress STA_SUBNET(255, 255, 255, 0);
 }
 
 WiFiManager::WiFiManager() {}
+
+void WiFiManager::begin() {
+    WiFi.mode(WiFiMode_t::WIFI_AP_STA);
+    setupAP();
+    setupSTA();
+}
 
 void WiFiManager::setupAP() {
     WiFi.softAPConfig(AP_LOCAL_IP, AP_GATEWAY, AP_SUBNET); 
@@ -25,16 +27,31 @@ void WiFiManager::setupAP() {
 }
 
 void WiFiManager::setupSTA() {
-    WiFi.config(STA_LOCAL_IP, STA_GATEWAY, STA_SUBNET);
     WiFi.begin(STA_SSID, STA_PSWD);
+    m_lastReconAttempt = micros();
 }
 
 void WiFiManager::update() {
-    WiFi.RSSI();
+    m_staStatus = WiFi.status();
+
+    if (m_staStatus == WL_CONNECTED) {
+        if (micros() % 2000000 == 0) {
+            m_rssi = WiFi.RSSI();
+        }
+    } else {
+        m_rssi = 0;
+
+        if (micros() - m_lastReconAttempt > 15000000) {
+            WiFi.reconnect();
+            m_lastReconAttempt = micros();
+        }
+    }
 }
 
-void WiFiManager::begin() {
-    WiFi.mode(WiFiMode_t::WIFI_AP_STA);
-    setupAP();
-    setupSTA();
+const int8_t WiFiManager::getRSSI() {
+    return m_rssi;
+}
+
+const bool WiFiManager::isStaConnected() {
+    return m_staStatus == WL_CONNECTED;
 }

@@ -1,7 +1,15 @@
 #ifndef WIFI_MANAGER_H_
 #define WIFI_MANAGER_H_
 
+#include <cstdint>
+
 class WiFiManager {
+    private:
+
+        int8_t m_rssi{};
+        uint8_t m_staStatus{};
+        unsigned long m_lastReconAttempt{};
+
     private:
 
         void setupAP();
@@ -12,6 +20,8 @@ class WiFiManager {
         WiFiManager();
         void begin();
         void update();
+        const int8_t getRSSI();
+        const bool isStaConnected();
 
 };
 

@@ -40,7 +40,7 @@ class IMUManager {
         IMUManager();
         void begin();
         void update();
-        IMUData getData();
+        IMUData getData() const;
 
     public:
         void dmpDataReady();

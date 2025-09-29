@@ -6,12 +6,11 @@
 
 class IMUManager {
     private:
-        IMUData m_swOffsets;
-        IMUData m_mpuData{};
-
-    private:
 
         unsigned long m_previousTime{};
+
+        IMUData m_swOffsets;
+        IMUData m_mpuData{};
 
         MPU6050 m_mpu{};
 
@@ -29,7 +28,6 @@ class IMUManager {
     private:
 
         bool readRawYPR(IMUData& data);
-
         void setupConfig();
         void calibrateHardwareOffsets();
         void calibrateSoftwareOffsets();

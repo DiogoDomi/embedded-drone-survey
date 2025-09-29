@@ -21,8 +21,8 @@ namespace Pins {
         // ESCs PWM
         constexpr uint8_t MOTOR1_PIN = 14; // D5
         constexpr uint8_t MOTOR2_PIN = 12; // D6
-        constexpr uint8_t MOTOR1_PIN = 13; // D7
-        constexpr uint8_t MOTOR1_PIN = 15; // D8
+        constexpr uint8_t MOTOR3_PIN = 13; // D7
+        constexpr uint8_t MOTOR4_PIN = 15; // D8
     }
 };
 

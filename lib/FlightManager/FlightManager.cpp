@@ -10,13 +10,14 @@ namespace {
     };
 
     constexpr uint8_t ABS_JOYSTICK_RANGE = 100;
+    constexpr uint8_t JOYSTICK_DEADZONE = 3;
 
     constexpr float PR_ANGLE = 20.0F;
     constexpr float Y_RATE = 200.0F;
 
     constexpr float YAW_PID_SCALE = 1.0F;
     constexpr float PITCH_PID_SCALE = 1.0F;
-    constexpr float ROLL_PID_SCALE = 1.0F;
+    constexpr float ROLL_PID_SCALE = 2.0F;
 
     constexpr uint16_t DEBUG_PRINT_INTERVAL = 1000;
 }
@@ -64,23 +65,24 @@ void FlightManager::setMotorState() {
 void FlightManager::processStateLogic(bool stateChangeRequest, const JoyData& joyData) {
     if (!stateChangeRequest) { return; }
 
-    if (stateChangeRequest && joyData.ly == -ABS_JOYSTICK_RANGE) {
-        switch (m_currentState) {
-            case State::DISARMED:
-                m_currentState = State::ARMED;
-                break;
-            case State::ARMED:
-                m_currentState = State::DISARMED;
-                break;
-        }
-        setMotorState();
+    if (joyData.ly > (-ABS_JOYSTICK_RANGE + JOYSTICK_DEADZONE)) {
+        return;
     }
+
+    switch (m_currentState) {
+        case State::DISARMED:
+            m_currentState = State::ARMED;
+            break;
+        case State::ARMED:
+            m_currentState = State::DISARMED;
+            break;
+    }
+    setMotorState();
 }
 
 void FlightManager::readSensors() {
     m_imu.update();
     IMUData data = m_imu.getData();
-
     m_imuData = data;
 }
 
@@ -101,23 +103,19 @@ void FlightManager::calculatePID() {
 }
 
 void FlightManager::writeMotors() {
-    float scaledYaw{}, scaledPitch{}, scaledRoll{};
-    float motor_FL_F{}, motor_FR_F{}, motor_BL_F{}, motor_BR_F{};
-    uint16_t motor_FL{}, motor_FR{}, motor_BL{}, motor_BR{};
+    float scaledYaw = m_yawPidOutput * YAW_PID_SCALE;
+    float scaledPitch = m_pitchPidOutput * PITCH_PID_SCALE;
+    float scaledRoll = m_rollPidOutput * ROLL_PID_SCALE;
 
-    scaledYaw = m_yawPidOutput * YAW_PID_SCALE;
-    scaledPitch = m_pitchPidOutput * PITCH_PID_SCALE;
-    scaledRoll = m_rollPidOutput * ROLL_PID_SCALE;
+    float motor_FL_F = static_cast<float>(m_throttleMap) + scaledYaw - scaledPitch + scaledRoll;
+    float motor_FR_F = static_cast<float>(m_throttleMap) - scaledYaw - scaledPitch - scaledRoll;
+    float motor_BL_F = static_cast<float>(m_throttleMap) + scaledYaw + scaledPitch - scaledRoll;
+    float motor_BR_F = static_cast<float>(m_throttleMap) - scaledYaw + scaledPitch + scaledRoll;
 
-    motor_FL_F = static_cast<float>(m_throttleMap) + scaledYaw - scaledPitch + scaledRoll;
-    motor_FR_F = static_cast<float>(m_throttleMap) - scaledYaw - scaledPitch - scaledRoll;
-    motor_BL_F = static_cast<float>(m_throttleMap) + scaledYaw + scaledPitch - scaledRoll;
-    motor_BR_F = static_cast<float>(m_throttleMap) - scaledYaw + scaledPitch + scaledRoll;
-
-    motor_FL = static_cast<uint16_t>(constrain(motor_FL_F, Pwm::IDLE, Pwm::MAX_TEST));
-    motor_FR = static_cast<uint16_t>(constrain(motor_FR_F, Pwm::IDLE, Pwm::MAX_TEST));
-    motor_BL = static_cast<uint16_t>(constrain(motor_BL_F, Pwm::IDLE, Pwm::MAX_TEST));
-    motor_BR = static_cast<uint16_t>(constrain(motor_BR_F, Pwm::IDLE, Pwm::MAX_TEST));
+    uint16_t motor_FL = static_cast<uint16_t>(constrain(motor_FL_F, Pwm::IDLE, Pwm::MAX_TEST));
+    uint16_t motor_FR = static_cast<uint16_t>(constrain(motor_FR_F, Pwm::IDLE, Pwm::MAX_TEST));
+    uint16_t motor_BL = static_cast<uint16_t>(constrain(motor_BL_F, Pwm::IDLE, Pwm::MAX_TEST));
+    uint16_t motor_BR = static_cast<uint16_t>(constrain(motor_BR_F, Pwm::IDLE, Pwm::MAX_TEST));
 
     m_motorFL.writeMicroseconds(motor_FL);
     m_motorFR.writeMicroseconds(motor_FR);
@@ -126,13 +124,18 @@ void FlightManager::writeMotors() {
 }
 
 void FlightManager::update(const JoyData& joyData, bool stateChangeRequest) {
-    processStateLogic(stateChangeRequest, joyData);
-    if (m_currentState != State::ARMED) { return; }
     readSensors();
+    processStateLogic(stateChangeRequest, joyData);
+    if (m_currentState != State::ARMED) {
+        m_pidY.reset();
+        m_pidP.reset();
+        m_pidR.reset();
+        return;
+    }
+
     mapJoystick(joyData);
     calculatePID();
     writeMotors();
-
     printDebug();
 }
 
@@ -162,6 +165,7 @@ void FlightManager::calibrateESCs() {
     m_motorBR.writeMicroseconds(Pwm::MAX);
 
     delay(1000);
+
     m_motorFL.writeMicroseconds(Pwm::MIN);
     m_motorFR.writeMicroseconds(Pwm::MIN);
     m_motorBL.writeMicroseconds(Pwm::MIN);

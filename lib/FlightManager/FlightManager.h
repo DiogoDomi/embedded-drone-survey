@@ -12,10 +12,10 @@ class FlightManager {
 
         IMUManager& m_imu;
 
-        Servo m_motorFL{};
-        Servo m_motorFR{};
-        Servo m_motorBL{};
-        Servo m_motorBR{};
+        Servo m_motorFL{}; // Motor 1
+        Servo m_motorFR{}; // Motor 2
+        Servo m_motorBR{}; // Motor 3
+        Servo m_motorBL{}; // Motor 4
 
         PIDManager m_pidY;
         PIDManager m_pidP;

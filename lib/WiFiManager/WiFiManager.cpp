@@ -13,7 +13,6 @@ namespace {
     const char *STA_PSWD = "Leovegildocesar1#";
 
     constexpr uint16_t RSSI_UPDATE_INTERVAL = 2000;
-    constexpr uint16_t RECONNECT_INTERVAL = 15000;
 }
 
 WiFiManager::WiFiManager() {}
@@ -30,28 +29,20 @@ void WiFiManager::setupAP() {
 }
 
 void WiFiManager::setupSTA() {
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
     WiFi.begin(STA_SSID, STA_PSWD);
-    m_lastReconAttempt = millis();
 }
 
 void WiFiManager::update() {
-    m_staStatus = WiFi.status();
-
-    if (m_staStatus == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED) {
         if (millis() - m_lastRssiCheck > RSSI_UPDATE_INTERVAL) {
-            m_rssi = WiFi.RSSI();
             m_lastRssiCheck = millis();
+            m_rssi = WiFi.RSSI();
         }
     } else {
-        m_rssi = 0;
-
-        if (millis() - m_lastReconAttempt > RECONNECT_INTERVAL) {
-            WiFi.reconnect();
-            m_lastReconAttempt = millis();
-        }
+        m_rssi = -127;
     }
 }
 
-int8_t WiFiManager::getRSSI() const {
-    return m_rssi;
-}
+int8_t WiFiManager::getRSSI() const { return m_rssi; }

@@ -5,7 +5,7 @@
 #include "IMUManager.h"
 #include "PIDManager.h"
 #include "State.h"
-#include "JoyData.h"
+#include "JoystickData.h"
 
 class FlightManager {
     private:
@@ -44,9 +44,9 @@ class FlightManager {
 
         void setupMotors();
         void setMotorState();
-        void processStateLogic(bool stateChangeRequest, const JoyData& joyData);
+        void processStateLogic(bool stateChangeRequested, const JoystickData& joystickData);
         void readSensors();
-        void mapJoystick(const JoyData& joyData);
+        void mapJoystick(const JoystickData& joystickData);
         void calculatePID();
         void writeMotors();
 
@@ -56,7 +56,7 @@ class FlightManager {
 
         FlightManager(IMUManager& imu);
         void begin();
-        void update(const JoyData& joy, bool stateChangeRequest);
+        void update(bool stateChangeRequested, const JoystickData& joystickData);
         State getState() const;
 
 };

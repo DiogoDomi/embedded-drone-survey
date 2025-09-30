@@ -17,7 +17,7 @@ namespace {
 
     constexpr float YAW_PID_SCALE = 1.0F;
     constexpr float PITCH_PID_SCALE = 1.0F;
-    constexpr float ROLL_PID_SCALE = 2.0F;
+    constexpr float ROLL_PID_SCALE = 1.0F;
 
     constexpr uint16_t DEBUG_PRINT_INTERVAL = 1000;
 }
@@ -62,10 +62,10 @@ void FlightManager::setMotorState() {
     }
 }
 
-void FlightManager::processStateLogic(bool stateChangeRequest, const JoyData& joyData) {
-    if (!stateChangeRequest) { return; }
+void FlightManager::processStateLogic(bool stateChangeRequested, const JoystickData& joystickData) {
+    if (!stateChangeRequested) { return; }
 
-    if (joyData.ly > (-ABS_JOYSTICK_RANGE + JOYSTICK_DEADZONE)) {
+    if (joystickData.ly > (-ABS_JOYSTICK_RANGE + JOYSTICK_DEADZONE)) {
         return;
     }
 
@@ -82,15 +82,14 @@ void FlightManager::processStateLogic(bool stateChangeRequest, const JoyData& jo
 
 void FlightManager::readSensors() {
     m_imu.update();
-    IMUData data = m_imu.getData();
-    m_imuData = data;
+    m_imuData = m_imu.getData();
 }
 
-void FlightManager::mapJoystick(const JoyData& joyData) {
-    m_throttleMap = map(joyData.ly, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, Pwm::IDLE, Pwm::MAX_TEST);
-    m_yawMap = fmap(joyData.lx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -Y_RATE, Y_RATE);
-    m_pitchMap = fmap(joyData.ry, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
-    m_rollMap = fmap(joyData.rx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
+void FlightManager::mapJoystick(const JoystickData& joystickData) {
+    m_throttleMap = map(joystickData.ly, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, Pwm::IDLE, Pwm::MAX_TEST);
+    m_yawMap = fmap(joystickData.lx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -Y_RATE, Y_RATE);
+    m_pitchMap = fmap(joystickData.ry, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
+    m_rollMap = fmap(joystickData.rx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
 }
 
 void FlightManager::calculatePID() {
@@ -123,9 +122,10 @@ void FlightManager::writeMotors() {
     m_motorBR.writeMicroseconds(motor_BR);
 }
 
-void FlightManager::update(const JoyData& joyData, bool stateChangeRequest) {
+void FlightManager::update(bool stateChangeRequested,const JoystickData& joystickData) {
     readSensors();
-    processStateLogic(stateChangeRequest, joyData);
+
+    processStateLogic(stateChangeRequested, joystickData);
     if (m_currentState != State::ARMED) {
         m_pidY.reset();
         m_pidP.reset();
@@ -133,28 +133,43 @@ void FlightManager::update(const JoyData& joyData, bool stateChangeRequest) {
         return;
     }
 
-    mapJoystick(joyData);
+    mapJoystick(joystickData);
     calculatePID();
     writeMotors();
+
     printDebug();
 }
 
-State FlightManager::getState() const {
-    return m_currentState;
-}
+State FlightManager::getState() const { return m_currentState; }
 
 void FlightManager::printDebug() {
     if (millis() - m_previousDebugTime > DEBUG_PRINT_INTERVAL) {
         m_previousDebugTime = millis();
 
-        Serial.print("M_FL : ");
-        Serial.println(m_motorFL.readMicroseconds());
-        Serial.print("M_FR : ");
-        Serial.println(m_motorFR.readMicroseconds());
-        Serial.print("M_BL : ");
-        Serial.println(m_motorBL.readMicroseconds());
-        Serial.print("M_BR : ");
-        Serial.println(m_motorBR.readMicroseconds());
+        // Serial.print("M_FL : ");
+        // Serial.println(m_motorFL.readMicroseconds());
+        // Serial.print("M_FR : ");
+        // Serial.println(m_motorFR.readMicroseconds());
+        // Serial.print("M_BL : ");
+        // Serial.println(m_motorBL.readMicroseconds());
+        // Serial.print("M_BR : ");
+        // Serial.println(m_motorBR.readMicroseconds());
+
+        // Serial.print("Yaw : ");
+        // Serial.println(m_imuData.yaw);
+        // Serial.print("Pitch : ");
+        // Serial.println(m_imuData.pitch);
+        // Serial.print("Roll : ");
+        // Serial.println(m_imuData.roll);
+
+        // Serial.print("PID_Y : ");
+        // Serial.println(m_yawPidOutput);
+        // Serial.print("PID_P : ");
+        // Serial.println(m_pitchPidOutput);
+        // Serial.print("PID_R : ");
+        // Serial.println(m_rollPidOutput);
+
+        // Serial.println();
     }
 }
 

@@ -33,6 +33,7 @@ class WebManager {
         void onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len);
         void handleWebSocketMessage(void* arg, uint8_t* data, size_t len);
         void onConnectSendTelemetry(AsyncWebSocketClient* client);
+        void onConnectSendJoyData(AsyncWebSocketClient* client);
 
     public:
 

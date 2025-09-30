@@ -53,6 +53,7 @@ void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* cl
     switch (type) {
         case AwsEventType::WS_EVT_CONNECT:
             onConnectSendTelemetry(client);
+            onConnectSendJoyData(client);
             break;
         case AwsEventType::WS_EVT_DATA:
             handleWebSocketMessage(arg, data, len);
@@ -74,6 +75,20 @@ void WebManager::onConnectSendTelemetry(AsyncWebSocketClient* client) {
     doc["lat"] = m_telemetryCache.gps.lat;
     doc["lon"] = m_telemetryCache.gps.lon;
     doc["alt"] = m_telemetryCache.gps.alt;
+
+    serializeJson(doc, output, JSON_SIZE);
+
+    client->text(output);
+}
+
+void WebManager::onConnectSendJoyData(AsyncWebSocketClient* client) {
+    char output[JSON_SIZE];
+    JsonDocument doc;
+
+    doc["lx"] = m_data.lx;
+    doc["ly"] = m_data.ly;
+    doc["rx"] = m_data.rx;
+    doc["ry"] = m_data.ry;
 
     serializeJson(doc, output, JSON_SIZE);
 

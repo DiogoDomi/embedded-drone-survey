@@ -3,10 +3,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const webSocket = new WebSocket("ws://192.168.4.200/ws");
 
     const DRONE_STATE = {
-        0: "IDLE",
-        1: "ARMED",
-        2: "DISARMED"
+        0: "DISARMED",
+        1: "ARMED"
     };
+
+    const joystickState = {"lx": 0, "ly": 0, "rx": 0, "ry": 0};
+    const joysticks = {};
 
     webSocket.onopen = () => console.log("WS Connection opened.");
 
@@ -48,16 +50,26 @@ document.addEventListener("DOMContentLoaded", function() {
         if (myObj.alt !== undefined) {
             document.getElementById("alt").innerHTML = myObj.alt;
         }
+
+        let joyDataUpdated = false;
+        if (myObj.lx !== undefined) { joystickState.lx = myObj.lx; joyDataUpdated = true; }
+        if (myObj.ly !== undefined) { joystickState.ly = myObj.ly; joyDataUpdated = true; }
+        if (myObj.rx !== undefined) { joystickState.rx = myObj.rx; joyDataUpdated = true; }
+        if (myObj.ry !== undefined) { joystickState.ry = myObj.ry; joyDataUpdated = true; }
+
+        if (joyDataUpdated) {
+            joysticks.left.sync();
+            joysticks.right.sync();
+        }
     };
 
-    const joystickState = {"lx": 0, "ly": 0, "rx": 0, "ry": 0};
-
     function createJoystick(canvasId, side) {
-    const canvas = document.getElementById(canvasId);
+        const canvas = document.getElementById(canvasId);
         const ctx = canvas.getContext("2d");
         const center = { x: canvas.width / 2, y: canvas.height / 2 };
         let stick = { x: center.x, y: center.y };
         const RADIUS = 80;
+        const NORM_MUL_DIV = 0.8;
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -86,8 +98,9 @@ document.addEventListener("DOMContentLoaded", function() {
             stick.x = center.x + Math.cos(angle) * dist;
             stick.y = center.y + Math.sin(angle) * dist;
 
-            const normX = Math.round((stick.x - center.x) / 0.8);
-            const normY = Math.round((stick.y - center.y) / 0.8);
+            const normX = Math.round((stick.x - center.x) / NORM_MUL_DIV);
+            const normY = Math.round((stick.y - center.y) / NORM_MUL_DIV);
+
             if (side === "left") {
                 joystickState.lx = normX;
                 joystickState.ly = -normY;
@@ -108,6 +121,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 joystickState.rx = 0;
                 joystickState.ry = 0;
             }
+            draw();
+        }
+
+        function sync() {
+            let normX, normY;
+
+            if (side === "left") {
+                normX = joystickState.lx;
+                normY = -joystickState.ly;
+            } else {
+                normX = joystickState.rx;
+                normY = -joystickState.ry;
+            }
+            stick.x = center.x + normX * NORM_MUL_DIV;
+            stick.y = center.y + normY * NORM_MUL_DIV;
             draw();
         }
 
@@ -132,20 +160,25 @@ document.addEventListener("DOMContentLoaded", function() {
                 resetStick();
             }
         });
-
         draw();
+        return { sync: sync };
     }
 
     function sendRequest(data) {
-        webSocket.send(JSON.stringify(data));
+        if (webSocket.readyState === WebSocket.OPEN) {
+            webSocket.send(JSON.stringify(data));
+        }
     }
 
     const stateBox = document.getElementById("stateBox");
-    stateBox.addEventListener("click", () => sendRequest({"state":true}));
+    stateBox.addEventListener("click", () => {
+        const command = { ...joystickState, "state": true };
+        sendRequest(command);
+    });
 
     setInterval(() => sendRequest(joystickState), 50);
 
-    createJoystick("ljoy", "left");
-    createJoystick("rjoy", "right");
+    joysticks.left = createJoystick("ljoy", "left");
+    joysticks.right = createJoystick("rjoy", "right");
 }
 );

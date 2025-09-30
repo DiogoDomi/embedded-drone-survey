@@ -159,19 +159,20 @@ void FlightManager::printDebug() {
 }
 
 void FlightManager::calibrateESCs() {
+    setupMotors();
+    delay(1000);
+
     m_motorFL.writeMicroseconds(Pwm::MAX);
     m_motorFR.writeMicroseconds(Pwm::MAX);
     m_motorBL.writeMicroseconds(Pwm::MAX);
     m_motorBR.writeMicroseconds(Pwm::MAX);
-
-    delay(1000);
+    delay(3000);
 
     m_motorFL.writeMicroseconds(Pwm::MIN);
     m_motorFR.writeMicroseconds(Pwm::MIN);
     m_motorBL.writeMicroseconds(Pwm::MIN);
     m_motorBR.writeMicroseconds(Pwm::MIN);
-
-    delay(1000);
+    delay(3000);
 }
 
 float FlightManager::fmap(float x, float in_min, float in_max, float out_min, float out_max) {

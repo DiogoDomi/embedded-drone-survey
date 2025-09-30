@@ -8,7 +8,7 @@ namespace Pins {
         // MPU6050 I2C & INT
         // constexpr uint8_t SCL_PIN = 5; // D1
         // constexpr uint8_t SDA_PIN = 4; // D2
-        constexpr uint8_t INTERRUPT_PIN = 2; // D4
+        constexpr uint8_t INTERRUPT_PIN = 14; // D5
     }
 
     namespace GPS {

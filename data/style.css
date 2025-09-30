@@ -71,3 +71,28 @@ body {
     border-radius: 50%;
     touch-action: none;
 }
+
+@media (max-height: 450px) and (orientation: landscape) {
+    .container-data {
+        height: 90px; 
+        align-items: start;
+    }
+
+    .state-box, .sensor-box {
+        height: 70px;
+        width: 100px;
+        font-size: 12px;
+    }
+
+    .sensor-title {
+        font-size: 12px;
+    }
+
+    .reading {
+        font-size: 12px;
+    }
+    
+    .container-canvas {
+        height: calc(100vh - 90px); 
+    }
+}

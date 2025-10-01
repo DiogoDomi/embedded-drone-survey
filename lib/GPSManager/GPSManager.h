@@ -11,21 +11,14 @@ class GPSManager {
         TinyGPSPlus m_gps{};
         SoftwareSerial m_swSerial{};
 
-        GPSData m_currentData{};
-        GPSData m_lastSentData{};
-
-        bool m_isNewDataAvailable{};
-
-    private:
-
-        bool isDataDifferent(float a, float b);
+        GPSData m_data{};
 
     public:
 
         GPSManager();
         void begin();
         void update();
-        bool getDataIfNew(GPSData& data);
+        GPSData getData() const;
 
 };
 

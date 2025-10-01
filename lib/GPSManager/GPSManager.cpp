@@ -17,36 +17,25 @@ void GPSManager::update() {
     while (m_swSerial.available() > 0) {
         char c = m_swSerial.read();
         Serial.print(c);
-        if (m_gps.encode(c)) { 
-            if (m_gps.location.isUpdated() && m_gps.location.isValid() && m_gps.altitude.isUpdated() && m_gps.altitude.isValid()) {
-                m_currentData.lat = m_gps.location.lat();
-                m_currentData.lon = m_gps.location.lng();
-                m_currentData.alt = m_gps.altitude.meters();
-                m_isNewDataAvailable = true;
+        if (m_gps.encode(c)) {
+            if (m_gps.location.isUpdated()) {
+                if (m_gps.location.isValid()) {
+                    m_data.lat = m_gps.location.lat();
+                    m_data.lon = m_gps.location.lng();
+                } else {
+                    m_data.lat = Flags::GPS_LAT_INVALID;
+                    m_data.lon = Flags::GPS_LON_INVALID;
+                }
             }
-            Serial.println();
+            if (m_gps.altitude.isUpdated()) {
+                if (m_gps.altitude.isValid()) {
+                    m_data.alt = m_gps.altitude.meters();
+                } else {
+                    m_data.alt = Flags::GPS_ALT_INVALID;
+                }
+            }
         }
     }
 }
 
-bool GPSManager::getDataIfNew(GPSData& data) {
-    if (!m_isNewDataAvailable) { return false; }
-
-    if (isDataDifferent(m_currentData.alt, m_lastSentData.alt) ||
-        isDataDifferent(m_currentData.lat, m_lastSentData.lat) ||
-        isDataDifferent(m_currentData.lon, m_lastSentData.lon))
-    {
-        data = m_currentData;
-        m_lastSentData = m_currentData;
-        m_isNewDataAvailable = false;
-        return true;
-    }
-
-    m_isNewDataAvailable = false;
-    return false;
-}
-
-bool GPSManager::isDataDifferent(float a, float b) {
-    constexpr float epsilon = 0.000001F;
-    return fabsf(a - b) > epsilon;
-}
+GPSData GPSManager::getData() const { return m_data; }

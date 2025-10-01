@@ -87,10 +87,8 @@ bool IMUManager::readDMPData(IMUData& data) {
         return false;
     } else if (m_intStatus & 0x02) {
         if (m_fifoCount < m_packetSize) { return false; }
-        while (m_fifoCount >= m_packetSize) {
-            m_mpu.getFIFOBytes(m_fifoBuffer, m_packetSize);
-            m_fifoCount -= m_packetSize;
-        }
+
+        m_mpu.getFIFOBytes(m_fifoBuffer, m_packetSize);
 
         m_mpu.dmpGetQuaternion(&m_quaternion, m_fifoBuffer);
         m_mpu.dmpGetGravity(&m_gravity, &m_quaternion);

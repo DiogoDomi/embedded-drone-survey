@@ -6,24 +6,18 @@
 #include "JoystickData.h"
 #include "GPSData.h"
 #include "State.h"
+#include "TelemetryData.h"
 
 class WebManager {
         static const uint8_t JSON_JOYSTICK_SIZE = 140;
         static const uint8_t JSON_TELEMETRY_SIZE = 160;
 
     private:
-        struct TelemetryCache {
-            State state{};
-            int8_t rssi{};
-            GPSData gps{};
-        };
-
-    private:
 
         AsyncWebServer& m_server;
         AsyncWebSocket& m_socket;
 
-        TelemetryCache m_telemetryCache{};
+        TelemetryData m_telemetryCache{};
         JoystickData m_data{};
         bool m_stateChangeRequested{};
 

@@ -3,15 +3,15 @@
 
 class PIDManager {
     private:
-        const float m_kp{};
-        const float m_ki{};
-        const float m_kd{};
+        const float m_kP{};
+        const float m_kI{};
+        const float m_kD{};
 
         float m_accumulatedError{};
         float m_previousError{};
 
     public:
-        PIDManager(float kp, float ki, float kd);
+        PIDManager(float kP, float kI, float kD);
         float compute(float realValue, float setpointValue, float deltaTime);
         void reset();
 };

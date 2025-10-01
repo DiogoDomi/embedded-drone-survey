@@ -1,30 +1,33 @@
 #include "PIDManager.h"
 #include "Arduino.h"
 
-PIDManager::PIDManager(float kp, float ki, float kd)
+namespace { constexpr float MAX_ACCUMULATED_ERROR = 200.0F; }
+
+PIDManager::PIDManager(float kP, float kI, float kD)
     :
-    m_kp(kp),
-    m_ki(ki),
-    m_kd(kd)
+    m_kP(kP),
+    m_kI(kI),
+    m_kD(kD)
     {}
 
 float PIDManager::compute(float realValue, float setpointValue, float deltaTime) {
     float error = setpointValue - realValue;
 
-    float P = m_kp * error;
+    float P = m_kP * error;
 
     m_accumulatedError += error * deltaTime;
-    m_accumulatedError = constrain(m_accumulatedError, -200.0F, 200.0F);
-    float I = m_ki * m_accumulatedError;
+    m_accumulatedError = constrain(m_accumulatedError, -MAX_ACCUMULATED_ERROR, MAX_ACCUMULATED_ERROR);
+    float I = m_kI * m_accumulatedError;
 
-    float derivatedError = (error - m_previousError) / deltaTime;
-    float D = m_kd * derivatedError;
+    float D = 0.0F;
+    if (deltaTime > 0) {
+        float derivatedError = (error - m_previousError) / deltaTime;
+        D = m_kD * derivatedError;
+    }
 
     m_previousError = error;
 
-    float PID = P + I + D;
-
-    return PID;
+    return P + I + D;
 }
 
 void PIDManager::reset() {

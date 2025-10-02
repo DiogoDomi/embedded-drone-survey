@@ -66,11 +66,11 @@ void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* cl
 
 void WebManager::onConnectSendTelemetry(AsyncWebSocketClient* client) const {
     StaticJsonDocument<JSON_TELEMETRY_SIZE> doc{};
-    doc["state"] = static_cast<uint8_t>(m_telemetryCache.state);
-    doc["rssi"] = m_telemetryCache.rssi;
-    doc["lat"] = m_telemetryCache.gps.lat;
-    doc["lon"] = m_telemetryCache.gps.lon;
-    doc["alt"] = m_telemetryCache.gps.alt;
+    doc["state"] = static_cast<uint8_t>(m_cachedState);
+    doc["rssi"] = m_cachedTelemetry.rssi;
+    doc["lat"] = m_cachedTelemetry.gps.lat;
+    doc["lon"] = m_cachedTelemetry.gps.lon;
+    doc["alt"] = m_cachedTelemetry.gps.alt;
 
     char output[JSON_TELEMETRY_SIZE]{};
     serializeJson(doc, output);
@@ -112,15 +112,14 @@ void WebManager::update() {
     m_socket.cleanupClients();
 }
 
-void WebManager::cacheTelemetry(const TelemetryData& telemetry) {
-    m_telemetryCache.state = telemetry.state;
-    m_telemetryCache.rssi = telemetry.rssi;
-    m_telemetryCache.gps = telemetry.gps;
+void WebManager::cacheTelemetry(const TelemetryData& telemetry, State state) {
+    m_cachedState = state;
+    m_cachedTelemetry = telemetry;
 }
 
-void WebManager::sendTelemetry(const TelemetryData& telemetry) const {
+void WebManager::sendTelemetry(const TelemetryData& telemetry, State state) const {
     StaticJsonDocument<JSON_TELEMETRY_SIZE> doc{};
-    doc["state"] = static_cast<uint8_t>(telemetry.state);
+    doc["state"] = static_cast<uint8_t>(state);
     doc["rssi"] = telemetry.rssi;
     doc["lat"] = telemetry.gps.lat;
     doc["lon"] = telemetry.gps.lon;

@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include "JoystickData.h"
 #include "TelemetryData.h"
+#include "State.h"
 
 class WebManager {
         static const uint8_t JSON_JOYSTICK_SIZE = 140;
@@ -15,7 +16,9 @@ class WebManager {
         AsyncWebServer& m_server;
         AsyncWebSocket& m_socket;
 
-        TelemetryData m_telemetryCache{};
+        State m_cachedState{};
+        TelemetryData m_cachedTelemetry{};
+
         JoystickData m_joystickData{};
         bool m_stateChangeRequested{};
 
@@ -35,8 +38,8 @@ class WebManager {
         WebManager(AsyncWebServer& server, AsyncWebSocket& socket);
         void begin();
         void update();
-        void cacheTelemetry(const TelemetryData& telemetry);
-        void sendTelemetry(const TelemetryData& telemetry) const;
+        void cacheTelemetry(const TelemetryData& telemetry, State state);
+        void sendTelemetry(const TelemetryData& telemetry, State state) const;
         bool hasStateChangeRequest();
         JoystickData getJoystickData() const;
 

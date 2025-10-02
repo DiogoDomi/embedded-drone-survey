@@ -14,7 +14,7 @@ SystemManager::SystemManager() :
 
     m_gps(),
 
-    m_data(m_wifi, m_gps)
+    m_telemetry(m_wifi, m_gps, m_flight)
     {}
 
 SystemManager& SystemManager::getInstance() {
@@ -33,7 +33,9 @@ void SystemManager::setup() {
 
     delay(500);
 
-    m_web.cacheTelemetry(m_gps.getData(), m_wifi.getRSSI(), m_flight.getState());
+    m_telemetry.update();
+
+    m_web.cacheTelemetry(m_telemetry.getTelemetryData());
 
     m_previousTelemetryTime = millis();
 
@@ -46,12 +48,12 @@ void SystemManager::loop() {
 
     bool stateChangeRequested = m_web.hasStateChangeRequest();
 
-    m_flight.update(stateChangeRequested, m_web.getData());
+    m_flight.update(stateChangeRequested, m_web.getJoystickData());
 
     if (stateChangeRequested || (millis() - m_previousTelemetryTime >= TELEMETRY_INTERVAL)) { 
         m_previousTelemetryTime = millis();
 
-        m_web.cacheTelemetry(m_gps.getData(), m_wifi.getRSSI(), m_flight.getState());
-        m_web.sendTelemetry(m_gps.getData(), m_wifi.getRSSI(), m_flight.getState());
+        m_web.cacheTelemetry(m_telemetry.getTelemetryData());
+        m_web.sendTelemetry(m_telemetry.getTelemetryData());
     }
 }

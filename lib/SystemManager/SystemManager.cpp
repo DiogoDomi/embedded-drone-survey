@@ -1,7 +1,5 @@
 #include "SystemManager.h"
 
-namespace { constexpr unsigned long TELEMETRY_INTERVAL = 1000; }
-
 SystemManager::SystemManager() :   
     m_wifi(),
 
@@ -14,7 +12,7 @@ SystemManager::SystemManager() :
 
     m_gps(),
 
-    m_telemetry(m_wifi, m_gps, m_flight)
+    m_telemetry(m_wifi, m_gps)
     {}
 
 SystemManager& SystemManager::getInstance() {
@@ -35,10 +33,7 @@ void SystemManager::setup() {
 
     m_telemetry.update();
 
-    m_web.cacheTelemetry(m_telemetry.getTelemetryData());
-
-    m_previousTelemetryTime = millis();
-
+    m_web.cacheTelemetry(m_telemetry.getTelemetryData(), m_flight.getStateData());
 }
 
 void SystemManager::loop() {
@@ -46,14 +41,18 @@ void SystemManager::loop() {
     m_wifi.update();
     m_gps.update();
 
-    bool stateChangeRequested = m_web.hasStateChangeRequest();
+    bool hasStateChangeRequest = m_web.hasStateChangeRequest();
+    m_flight.update(hasStateChangeRequest, m_web.getJoystickData());
+    m_telemetry.update();
 
-    m_flight.update(stateChangeRequested, m_web.getJoystickData());
+    if (hasStateChangeRequest || m_telemetry.shouldSendToWeb()) {
 
-    if (stateChangeRequested || (millis() - m_previousTelemetryTime >= TELEMETRY_INTERVAL)) { 
-        m_previousTelemetryTime = millis();
+        const TelemetryData telemetryData = m_telemetry.getTelemetryData();
+        const State state = m_flight.getStateData();
 
-        m_web.cacheTelemetry(m_telemetry.getTelemetryData());
-        m_web.sendTelemetry(m_telemetry.getTelemetryData());
+        m_web.cacheTelemetry(telemetryData, state);
+        m_web.sendTelemetry(telemetryData, state);
     }
+
+    // if (m_telemetry.shouldSendToBD()) {}
 }

@@ -13,8 +13,6 @@ class SystemManager {
         AsyncWebServer m_server;
         AsyncWebSocket m_socket;
 
-        unsigned long m_previousTelemetryTime{};
-
         WiFiManager m_wifi{};
         WebManager m_web;
         IMUManager m_imu{};

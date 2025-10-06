@@ -25,7 +25,7 @@ namespace {
 FlightManager::FlightManager(IMUManager& imu) :
     m_imu(imu),
 
-    m_pidY(0.0F, 0.0F, 0.0F),
+    m_pidY(5.0F, 0.5F, 0.05F),
     m_pidP(1.20F, 0.0F, 0.23F),
     m_pidR(1.20F, 0.0F, 0.23F)
     {}

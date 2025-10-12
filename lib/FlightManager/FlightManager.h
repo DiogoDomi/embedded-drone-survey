@@ -37,7 +37,7 @@ class FlightManager {
         unsigned long m_previousDebugTime{};
 
     private:
-        void calibrateESCs();
+        // void calibrateESCs();
         float fmap(float x, float in_min, float in_max, float out_min, float out_max);
 
         void setupMotors();
@@ -48,7 +48,7 @@ class FlightManager {
         void calculatePID();
         void writeMotors();
 
-        void printDebug();
+        // void printDebug();
 
     public:
 

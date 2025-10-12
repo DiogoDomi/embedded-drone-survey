@@ -136,58 +136,65 @@ void FlightManager::update(bool stateChangeRequested,const JoystickData& joystic
     calculatePID();
     writeMotors();
 
-    printDebug();
+    // printDebug();
 }
 
 State FlightManager::getStateData() const { return m_currentState; }
 
-void FlightManager::printDebug() {
-    if (millis() - m_previousDebugTime > DEBUG_PRINT_INTERVAL) {
-        m_previousDebugTime = millis();
+// void FlightManager::printDebug() {
+//     if (millis() - m_previousDebugTime > DEBUG_PRINT_INTERVAL) {
+//         m_previousDebugTime = millis();
 
-        // Serial.print("M_FL : ");
-        // Serial.println(m_motorFL.readMicroseconds());
-        // Serial.print("M_FR : ");
-        // Serial.println(m_motorFR.readMicroseconds());
-        // Serial.print("M_BR : ");
-        // Serial.println(m_motorBR.readMicroseconds());
-        // Serial.print("M_BL : ");
-        // Serial.println(m_motorBL.readMicroseconds());
+//         Serial.print("M_FL : ");
+//         Serial.println(m_motorFL.readMicroseconds());
+//         Serial.print("M_FR : ");
+//         Serial.println(m_motorFR.readMicroseconds());
+//         Serial.print("M_BR : ");
+//         Serial.println(m_motorBR.readMicroseconds());
+//         Serial.print("M_BL : ");
+//         Serial.println(m_motorBL.readMicroseconds());
 
-        // Serial.print("Yaw : ");
-        // Serial.println(m_imuData.yaw);
-        // Serial.print("Pitch : ");
-        // Serial.println(m_imuData.pitch);
-        // Serial.print("Roll : ");
-        // Serial.println(m_imuData.roll);
+//         Serial.print("Pitch : ");
+//         Serial.print(m_imuData.pitch);
+//         Serial.print(" | PitchMap: ");
+//         Serial.print(m_pitchMap);
+//         Serial.print(" | PID_P : ");
+//         Serial.println(m_pitchPidOutput);
 
-        // Serial.print("PID_Y : ");
-        // Serial.println(m_yawPidOutput);
-        // Serial.print("PID_P : ");
-        // Serial.println(m_pitchPidOutput);
-        // Serial.print("PID_R : ");
-        // Serial.println(m_rollPidOutput);
+//         Serial.print("Roll : ");
+//         Serial.print(m_imuData.roll);
+//         Serial.print(" | RollMap: ");
+//         Serial.print(m_rollMap);
+//         Serial.print(" | PID_R : ");
+//         Serial.println(m_rollPidOutput);
 
-        // Serial.println();
-    }
-}
+//         Serial.print("GyroZ : ");
+//         Serial.print(m_imuData.gyroZ);
+//         Serial.print(" | YawMap: ");
+//         Serial.print(m_yawMap);
+//         Serial.print(" | PID_Y : ");
+//         Serial.println(m_yawPidOutput);
 
-void FlightManager::calibrateESCs() {
-    setupMotors();
-    delay(1000);
+//         Serial.println("--------------------");
+//     }
+// }
 
-    m_motorFL.writeMicroseconds(Pwm::MAX);
-    m_motorFR.writeMicroseconds(Pwm::MAX);
-    m_motorBR.writeMicroseconds(Pwm::MAX);
-    m_motorBL.writeMicroseconds(Pwm::MAX);
-    delay(3000);
+// void FlightManager::calibrateESCs() {
+//     setupMotors();
+//     delay(1000);
 
-    m_motorFL.writeMicroseconds(Pwm::MIN);
-    m_motorFR.writeMicroseconds(Pwm::MIN);
-    m_motorBR.writeMicroseconds(Pwm::MIN);
-    m_motorBL.writeMicroseconds(Pwm::MIN);
-    delay(3000);
-}
+//     m_motorFL.writeMicroseconds(Pwm::MAX);
+//     m_motorFR.writeMicroseconds(Pwm::MAX);
+//     m_motorBR.writeMicroseconds(Pwm::MAX);
+//     m_motorBL.writeMicroseconds(Pwm::MAX);
+//     delay(3000);
+
+//     m_motorFL.writeMicroseconds(Pwm::MIN);
+//     m_motorFR.writeMicroseconds(Pwm::MIN);
+//     m_motorBR.writeMicroseconds(Pwm::MIN);
+//     m_motorBL.writeMicroseconds(Pwm::MIN);
+//     delay(3000);
+// }
 
 float FlightManager::fmap(float x, float in_min, float in_max, float out_min, float out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

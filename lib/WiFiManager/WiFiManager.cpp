@@ -49,3 +49,5 @@ void WiFiManager::update() {
 }
 
 int8_t WiFiManager::getRSSIData() const { return m_rssiData; }
+
+wl_status_t WiFiManager::getWiFiStatus() const { return WiFi.status(); }

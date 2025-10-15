@@ -20,6 +20,7 @@ class WiFiManager {
         void begin();
         void update();
         int8_t getRSSIData() const;
+        wl_status_t getWiFiStatus() const;        
 
 };
 

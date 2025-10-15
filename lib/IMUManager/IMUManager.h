@@ -7,8 +7,6 @@
 class IMUManager {
     private:
 
-        unsigned long m_previousTime{};
-
         IMUData m_swOffsets{};
         IMUData m_mpuData{};
 

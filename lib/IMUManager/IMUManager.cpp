@@ -10,7 +10,9 @@ namespace {
 
     constexpr uint8_t HARDWARE_LOOPS = 10;
     constexpr uint16_t SOFTWARE_LOOPS = 200;
-    constexpr float MICROS_TO_SEC = 1000000.0F;
+
+    constexpr float DMP_OUTPUT_RATE_HZ = 100.0F;
+    constexpr float DMP_DELTA_TIME_SEC = 1.0F / DMP_OUTPUT_RATE_HZ;
 }
 
 void IRAM_ATTR imu_isr_wrapper() {
@@ -26,7 +28,6 @@ void IMUManager::begin() {
     calibrateHardwareOffsets();
     while(!isDMPEnabled()) { yield(); }
     calibrateSoftwareOffsets();
-    m_previousTime = micros();
 }
 
 void IMUManager::setupConfig() {
@@ -114,8 +115,7 @@ void IMUManager::update() {
 
     IMUData rawReading{};
     if (readDMPData(rawReading)) {
-        m_mpuData.deltaTime = static_cast<float>(micros() - m_previousTime) / MICROS_TO_SEC;
-        m_previousTime = micros();
+        m_mpuData.deltaTime = DMP_DELTA_TIME_SEC;
 
         m_mpuData.yaw = rawReading.yaw - m_swOffsets.yaw;
         m_mpuData.pitch = rawReading.pitch - m_swOffsets.pitch;

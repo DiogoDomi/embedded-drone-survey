@@ -1,4 +1,9 @@
 #include "SystemManager.h"
+#include <time.h>
+
+namespace {
+    constexpr unsigned long DB_SEND_INTERVAL = 1000;
+}
 
 SystemManager::SystemManager() :   
     m_wifi(),
@@ -12,7 +17,11 @@ SystemManager::SystemManager() :
 
     m_gps(),
 
-    m_telemetry(m_wifi, m_gps)
+    m_telemetry(m_wifi, m_gps),
+
+    m_database(),
+
+    m_time()
     {}
 
 SystemManager& SystemManager::getInstance() {
@@ -21,38 +30,43 @@ SystemManager& SystemManager::getInstance() {
 }
 
 void SystemManager::setup() {
+    m_imu.begin();
     m_flight.begin();
-
     m_wifi.begin();
-
     m_web.begin();
-
     m_gps.begin();
-
-    delay(500);
+    m_time.begin();
+    m_database.begin();
 
     m_telemetry.update();
-
     m_web.cacheTelemetry(m_telemetry.getTelemetryData(), m_flight.getStateData());
 }
 
 void SystemManager::loop() {
+    m_imu.update();
     m_web.update();
+    bool hasStateChangeRequest = m_web.hasStateChangeRequest();
+    JoystickData joystickData = m_web.getJoystickData();
+    m_flight.update(hasStateChangeRequest, joystickData);
     m_wifi.update();
     m_gps.update();
-
-    bool hasStateChangeRequest = m_web.hasStateChangeRequest();
-    m_flight.update(hasStateChangeRequest, m_web.getJoystickData());
+    m_time.update();
     m_telemetry.update();
 
     if (hasStateChangeRequest || m_telemetry.shouldSendToWeb()) {
-
         const TelemetryData telemetryData = m_telemetry.getTelemetryData();
-        const State state = m_flight.getStateData();
-
+        State state = m_flight.getStateData();
         m_web.cacheTelemetry(telemetryData, state);
         m_web.sendTelemetry(telemetryData, state);
     }
 
-    // if (m_telemetry.shouldSendToBD()) {}
+    if ((millis() - m_lastDBSendTime >= DB_SEND_INTERVAL) || m_telemetry.shouldSendToBD()) {
+        if (m_wifi.getWiFiStatus() == WL_CONNECTED) {
+            TelemetryData currentTelemetry = m_telemetry.getTelemetryData();
+            time_t timeStamp = m_time.getTimeStamp();
+            if (m_database.sendDBData(currentTelemetry, timeStamp)) {
+                m_lastDBSendTime = millis();
+            }
+        }
+    }
 }

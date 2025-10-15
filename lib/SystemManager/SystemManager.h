@@ -7,6 +7,8 @@
 #include "FlightManager.h"
 #include "GPSManager.h"
 #include "TelemetryManager.h"
+#include "DatabaseManager.h"
+#include "TimeManager.h"
 
 class SystemManager {
     private:
@@ -19,8 +21,13 @@ class SystemManager {
         FlightManager m_flight;
         GPSManager m_gps{};
         TelemetryManager m_telemetry;
+        DatabaseManager m_database{};
+        TimeManager m_time{};
 
     private:
+
+        void sendTelemetryToDatabase();
+        unsigned long m_lastDBSendTime{};
 
         SystemManager();
         SystemManager(const SystemManager&) = delete;

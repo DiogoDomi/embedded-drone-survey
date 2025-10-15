@@ -19,7 +19,7 @@ namespace {
     constexpr float PITCH_PID_SCALE = 1.0F;
     constexpr float ROLL_PID_SCALE = 1.0F;
 
-    constexpr uint16_t DEBUG_PRINT_INTERVAL = 200;
+    constexpr uint8_t DEBUG_PRINT_INTERVAL = 100;
 }
 
 FlightManager::FlightManager(IMUManager& imu) :

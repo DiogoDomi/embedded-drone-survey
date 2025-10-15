@@ -31,9 +31,7 @@ FlightManager::FlightManager(IMUManager& imu) :
     {}
 
 void FlightManager::begin() {
-    m_imu.begin();
     setupMotors();
-
     m_currentState = State::DISARMED;
     setMotorState();
 }
@@ -65,9 +63,7 @@ void FlightManager::setMotorState() {
 void FlightManager::processStateLogic(bool stateChangeRequested, const JoystickData& joystickData) {
     if (!stateChangeRequested) { return; }
 
-    if (joystickData.ly > (-ABS_JOYSTICK_RANGE + JOYSTICK_DEADZONE)) {
-        return;
-    }
+    if (joystickData.ly > (-ABS_JOYSTICK_RANGE + JOYSTICK_DEADZONE)) { return; }
 
     switch (m_currentState) {
         case State::DISARMED:
@@ -81,7 +77,6 @@ void FlightManager::processStateLogic(bool stateChangeRequested, const JoystickD
 }
 
 void FlightManager::readSensors() {
-    m_imu.update();
     m_imuData = m_imu.getMPUData();
 }
 

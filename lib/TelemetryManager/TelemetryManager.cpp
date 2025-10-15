@@ -29,14 +29,13 @@ bool TelemetryManager::shouldSendToBD() {
     return false;
 }
 
-TelemetryData TelemetryManager::getTelemetryData() const {
+const TelemetryData& TelemetryManager::getTelemetryData() const {
     return m_currentTelemetry;
 }
 
 bool TelemetryManager::isTelemetryValid(const TelemetryData& telemetry) const {
     if (telemetry.rssi == Flags::WIFI_RSSI_INVALID) { return false; }
-    if (telemetry.gps.lat == Flags::GPS_LAT_INVALID || telemetry.gps.lon == Flags::GPS_LON_INVALID) { return false; }
-    if (telemetry.gps.alt == Flags::GPS_ALT_INVALID) { return false; }
+    if (telemetry.gps.lat == Flags::GPS_INVALID_LOCATION) { return false; }
     return true;
 }
 

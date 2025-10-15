@@ -26,7 +26,7 @@ class TelemetryManager {
         void update();
         bool shouldSendToWeb();
         bool shouldSendToBD();
-        TelemetryData getTelemetryData() const;
+        const TelemetryData& getTelemetryData() const;
 };
 
 #endif

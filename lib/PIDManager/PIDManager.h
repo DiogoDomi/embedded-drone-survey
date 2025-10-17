@@ -9,6 +9,7 @@ class PIDManager {
 
         float m_accumulatedError{};
         float m_previousError{};
+        float m_derivatedErrorFiltered{};
 
     public:
         PIDManager(float kP, float kI, float kD);

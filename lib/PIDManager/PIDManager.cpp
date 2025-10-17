@@ -1,7 +1,10 @@
 #include "PIDManager.h"
 #include "Arduino.h"
 
-namespace { constexpr float MAX_ACCUMULATED_ERROR = 200.0F; }
+namespace { 
+    constexpr float MAX_ACCUMULATED_ERROR = 200.0F;
+    constexpr float LPF_ALPHA = 0.6F;
+}
 
 PIDManager::PIDManager(float kP, float kI, float kD)
     :
@@ -21,8 +24,10 @@ float PIDManager::compute(float realValue, float setpointValue, float deltaTime)
 
     float D = 0.0F;
     if (deltaTime > 0) {
-        float derivatedError = (error - m_previousError) / deltaTime;
-        D = m_kD * derivatedError;
+        float derivatedErrorRaw = (error - m_previousError) / deltaTime;
+
+        m_derivatedErrorFiltered = (LPF_ALPHA * derivatedErrorRaw) + (1.0F - LPF_ALPHA) * m_derivatedErrorFiltered;
+        D = m_kD * m_derivatedErrorFiltered;
     }
 
     m_previousError = error;
@@ -33,4 +38,5 @@ float PIDManager::compute(float realValue, float setpointValue, float deltaTime)
 void PIDManager::reset() {
     m_accumulatedError = 0.0F;
     m_previousError = 0.0F;
+    m_derivatedErrorFiltered = 0.0F;
 }

@@ -34,7 +34,7 @@ void IMUManager::setupConfig() {
     Wire.begin(Pins::MPU::SDA_PIN, Pins::MPU::SCL_PIN);
     Wire.setClock(400000);
     m_mpu.initialize();
-    pinMode(Pins::MPU::INTERRUPT_PIN, INPUT);
+    pinMode(Pins::MPU::INTERRUPT_PIN, INPUT_PULLUP);
     m_devStatus = m_mpu.dmpInitialize();
 }
 

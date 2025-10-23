@@ -24,11 +24,12 @@ SystemManager& SystemManager::getInstance() {
 }
 
 void SystemManager::setup() {
-    m_imu.begin();
     m_flight.begin();
+    m_gps.begin();
+    delay(200);
+    m_imu.begin();
     m_wifi.begin();
     m_web.begin();
-    m_gps.begin();
     m_time.begin();
     m_database.begin();
 

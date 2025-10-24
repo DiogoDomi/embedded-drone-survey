@@ -176,42 +176,19 @@ State FlightManager::getStateData() const { return m_currentState; }
 //     }
 // }
 
-void FlightManager::calibrateESCs() {
-    Serial.begin(115200);
-    Serial.println();
-    delay(1000);
-
-    Serial.println("=============================================");
-    Serial.println("INICIANDO CALIBRACAO DE ESC");
-    Serial.println("VERIFIQUE: HÉLICES REMOVIDAS?");
-    Serial.println("VERIFIQUE: BATERIA LIPO DESCONECTADA?");
-    Serial.println("=============================================");
-    
-    setupMotors();
-    
-    Serial.println("Enviando sinal MÁXIMO (Pwm::MAX)...");
-    m_motorFL.writeMicroseconds(Pwm::MAX);
-    m_motorFR.writeMicroseconds(Pwm::MAX);
-    m_motorBR.writeMicroseconds(Pwm::MAX);
-    m_motorBL.writeMicroseconds(Pwm::MAX);
-
-    Serial.println("\n*********************************************");
-    Serial.println("CONECTE A BATERIA LIPO AGORA!");
-    Serial.println("Aguarde os bipes de 'modo de calibração'...");
-    Serial.println("*********************************************");
-    
-    delay(8000);
-
-    Serial.println("\nEnviando sinal MÍNIMO (Pwm::MIN)...");
-    m_motorFL.writeMicroseconds(Pwm::MIN);
-    m_motorFR.writeMicroseconds(Pwm::MIN);
-    m_motorBR.writeMicroseconds(Pwm::MIN);
-    m_motorBL.writeMicroseconds(Pwm::MIN);
-
-    Serial.println("Aguarde os bipes de 'confirmação' final.");
-    Serial.println("Calibração concluída.");
-    Serial.println("Desconecte a bateria LIPO.");
-}
+// void FlightManager::calibrateESCs() {
+//     setupMotors();
+//     Serial.println("Enviando sinal MÁXIMO (Pwm::MAX)...");
+//     m_motorFL.writeMicroseconds(Pwm::MAX);
+//     m_motorFR.writeMicroseconds(Pwm::MAX);
+//     m_motorBR.writeMicroseconds(Pwm::MAX);
+//     m_motorBL.writeMicroseconds(Pwm::MAX);
+//     delay(8000);
+//     m_motorFL.writeMicroseconds(Pwm::MIN);
+//     m_motorFR.writeMicroseconds(Pwm::MIN);
+//     m_motorBR.writeMicroseconds(Pwm::MIN);
+//     m_motorBL.writeMicroseconds(Pwm::MIN);
+// }
 
 float FlightManager::fmap(float x, float in_min, float in_max, float out_min, float out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

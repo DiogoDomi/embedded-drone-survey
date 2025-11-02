@@ -29,8 +29,9 @@ void IMUManager::begin() {
 
 void IMUManager::setupConfig() {
     Wire.begin(Pins::MPU::SDA_PIN, Pins::MPU::SCL_PIN);
-    Wire.setClock(100000);
+    Wire.setClock(400000L);
     m_mpu.initialize();
+    m_mpu.setDLPFMode(MPU6050_DLPF_BW_42);
     pinMode(Pins::MPU::INTERRUPT_PIN, INPUT_PULLUP);
     m_devStatus = m_mpu.dmpInitialize();
 }

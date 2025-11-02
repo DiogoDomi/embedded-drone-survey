@@ -21,6 +21,8 @@ namespace {
 
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 1;
 
+    constexpr float MICROS_TO_SEC_DIVIDER = 1000000.0F;
+
     constexpr float FL_CORRECTION = 0.94F;
     constexpr float FR_CORRECTION = 1.00F;
     constexpr float BR_CORRECTION = 0.90F;
@@ -39,6 +41,7 @@ void FlightManager::begin() {
     setupMotors();
     m_currentState = State::DISARMED;
     setMotorState();
+    m_previousTime = micros();
 }
 
 void FlightManager::setupMotors() {
@@ -94,11 +97,9 @@ void FlightManager::mapJoystick(const JoystickData& joystickData) {
 }
 
 void FlightManager::calculatePID() {
-    if (m_imuData.deltaTime <= 0 ) { return; }
-
-    m_yawPidOutput = m_pidY.compute(m_imuData.gyroZ, m_yawMap, m_imuData.deltaTime);
-    m_pitchPidOutput = m_pidP.compute(m_imuData.pitch, m_pitchMap, m_imuData.deltaTime);
-    m_rollPidOutput = m_pidR.compute(m_imuData.roll, m_rollMap, m_imuData.deltaTime);
+    m_yawPidOutput = m_pidY.compute(m_imuData.gyroZ, m_yawMap, m_deltaTime);
+    m_pitchPidOutput = m_pidP.compute(m_imuData.pitch, m_pitchMap, m_deltaTime);
+    m_rollPidOutput = m_pidR.compute(m_imuData.roll, m_rollMap, m_deltaTime);
 }
 
 void FlightManager::writeMotors() {
@@ -123,6 +124,10 @@ void FlightManager::writeMotors() {
 }
 
 void FlightManager::update(bool stateChangeRequested,const JoystickData& joystickData) {
+    unsigned long currentTime = micros();
+    m_deltaTime = (currentTime - m_previousTime) / MICROS_TO_SEC_DIVIDER;
+    m_previousTime = currentTime;
+    
     readSensors();
 
     processStateLogic(stateChangeRequested, joystickData);

@@ -36,14 +36,6 @@ class FlightManager {
 
         unsigned long m_previousDebugTime{};
 
-        float m_lastRoll{};
-        float m_lastPitch{};
-        float m_lastGyroZ{};
-
-        float m_actualRoll{};
-        float m_actualPitch{};
-        float m_actualGyroZ{};
-
     private:
         // void calibrateESCs();
         float fmap(float x, float in_min, float in_max, float out_min, float out_max);

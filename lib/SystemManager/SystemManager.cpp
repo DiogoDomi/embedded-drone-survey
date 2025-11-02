@@ -26,7 +26,7 @@ SystemManager& SystemManager::getInstance() {
 void SystemManager::setup() {
     m_flight.begin();
     m_gps.begin();
-    delay(2000);
+    delay(4000);
     m_imu.begin();
     m_wifi.begin();
     m_web.begin();

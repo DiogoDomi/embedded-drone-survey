@@ -21,8 +21,6 @@ namespace {
 
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 1;
 
-    constexpr float ANGLE_CHANGE_PER_LOOP = 20.0F;
-
     constexpr float FL_CORRECTION = 0.94F;
     constexpr float FR_CORRECTION = 1.00F;
     constexpr float BR_CORRECTION = 0.90F;
@@ -32,9 +30,9 @@ namespace {
 FlightManager::FlightManager(IMUManager& imu) :
     m_imu(imu),
 
-    m_pidY(2.0F, 0.5F, 0.0F),
-    m_pidP(1.2F, 0.15F, 0.15F),
-    m_pidR(1.0F, 0.10F, 0.15F)
+    m_pidY(0.0F, 0.0F, 0.0F),
+    m_pidP(0.4F, 0.0F, 0.0F),
+    m_pidR(0.3F, 0.0F, 0.0F)
     {}
 
 void FlightManager::begin() {
@@ -89,7 +87,8 @@ void FlightManager::readSensors() {
 
 void FlightManager::mapJoystick(const JoystickData& joystickData) {
     m_throttleMap = map(joystickData.ly, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, Pwm::IDLE, Pwm::MAX_TEST);
-    m_yawMap = fmap(joystickData.lx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -Y_RATE, Y_RATE);
+    // m_yawMap = fmap(joystickData.lx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -Y_RATE, Y_RATE);
+    m_yawMap = 0.0F;
     m_pitchMap = fmap(joystickData.ry, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
     m_rollMap = fmap(joystickData.rx, -ABS_JOYSTICK_RANGE, ABS_JOYSTICK_RANGE, -PR_ANGLE, PR_ANGLE);
 }
@@ -97,29 +96,9 @@ void FlightManager::mapJoystick(const JoystickData& joystickData) {
 void FlightManager::calculatePID() {
     if (m_imuData.deltaTime <= 0 ) { return; }
 
-    m_actualGyroZ = m_imuData.gyroZ;
-    m_actualPitch = m_imuData.pitch;
-    m_actualRoll = m_imuData.roll;
-
-    if (abs(m_actualGyroZ - m_lastGyroZ) > ANGLE_CHANGE_PER_LOOP) {
-        m_actualGyroZ = m_lastGyroZ;
-    } else {
-        m_lastGyroZ = m_actualGyroZ;
-    }
-    if (abs(m_actualPitch - m_lastPitch) > ANGLE_CHANGE_PER_LOOP) {
-        m_actualPitch = m_lastPitch;
-    } else {
-        m_lastPitch = m_actualPitch;
-    }
-    if (abs(m_actualRoll - m_lastRoll) > ANGLE_CHANGE_PER_LOOP) {
-        m_actualRoll = m_lastRoll;
-    } else {
-        m_lastRoll = m_actualRoll;
-    }
-
-    m_yawPidOutput = m_pidY.compute(m_actualGyroZ, m_yawMap, m_imuData.deltaTime);
-    m_pitchPidOutput = m_pidP.compute(m_actualPitch, m_pitchMap, m_imuData.deltaTime);
-    m_rollPidOutput = m_pidR.compute(m_actualRoll, m_rollMap, m_imuData.deltaTime);
+    m_yawPidOutput = m_pidY.compute(m_imuData.gyroZ, m_yawMap, m_imuData.deltaTime);
+    m_pitchPidOutput = m_pidP.compute(m_imuData.pitch, m_pitchMap, m_imuData.deltaTime);
+    m_rollPidOutput = m_pidR.compute(m_imuData.roll, m_rollMap, m_imuData.deltaTime);
 }
 
 void FlightManager::writeMotors() {

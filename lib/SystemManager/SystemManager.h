@@ -24,10 +24,10 @@ class SystemManager {
         DatabaseManager m_database{};
         TimeManager m_time{};
 
-    private:
+        unsigned long m_webPreviousTime{};
+        unsigned long m_dbPreviousTime{};
 
-        void sendTelemetryToDatabase();
-        unsigned long m_lastDBSendTime{};
+    private:
 
         SystemManager();
         SystemManager(const SystemManager&) = delete;

@@ -2,7 +2,8 @@
 #include <time.h>
 
 namespace {
-    constexpr unsigned long DB_SEND_INTERVAL = 1000;
+    constexpr uint16_t DB_SEND_INTERVAL = 5000;
+    constexpr uint8_t WEB_SEND_INTERVAL = 100;
 }
 
 SystemManager::SystemManager() :   
@@ -13,7 +14,7 @@ SystemManager::SystemManager() :
     m_imu(),
     m_flight(m_imu),
     m_gps(),
-    m_telemetry(m_wifi, m_gps),
+    m_telemetry(m_wifi, m_gps, m_flight),
     m_database(),
     m_time()
     {}
@@ -34,7 +35,7 @@ void SystemManager::setup() {
     m_database.begin();
 
     m_telemetry.update();
-    m_web.cacheTelemetry(m_telemetry.getTelemetryData(), m_flight.getStateData());
+    m_web.cacheTelemetry(m_telemetry.getTelemetry());
 }
 
 void SystemManager::loop() {
@@ -48,20 +49,21 @@ void SystemManager::loop() {
     m_time.update();
     m_telemetry.update();
 
-    if (hasStateChangeRequest || m_telemetry.shouldSendToWeb()) {
-        const TelemetryData telemetryData = m_telemetry.getTelemetryData();
-        State state = m_flight.getStateData();
-        m_web.cacheTelemetry(telemetryData, state);
-        m_web.sendTelemetry(telemetryData, state);
+    unsigned long currentTime = millis();
+
+    if (hasStateChangeRequest || currentTime - m_webPreviousTime >= WEB_SEND_INTERVAL) {
+        m_webPreviousTime = currentTime;
+        const TelemetryData telemetryData = m_telemetry.getTelemetry();
+        m_web.cacheTelemetry(telemetryData);
+        m_web.sendTelemetry(telemetryData);
     }
 
-    // if ((millis() - m_lastDBSendTime >= DB_SEND_INTERVAL) || m_telemetry.shouldSendToBD()) {
-    //     if (m_wifi.getWiFiStatus() == WL_CONNECTED) {
-    //         TelemetryData currentTelemetry = m_telemetry.getTelemetryData();
-    //         time_t timeStamp = m_time.getTimeStamp();
-    //         if (m_database.sendDBData(currentTelemetry, timeStamp)) {
-    //             m_lastDBSendTime = millis();
-    //         }
-    //     }
-    // }
+    if (m_wifi.getWiFiStatus() == WL_CONNECTED && m_time.getTimestamp() > 1000) {
+        if (currentTime - m_dbPreviousTime >= DB_SEND_INTERVAL) {
+            m_dbPreviousTime = currentTime;
+            const TelemetryData telemetryData = m_telemetry.getTelemetry();
+            const time_t timestamp = m_time.getTimestamp();
+            m_database.sendDBData(telemetryData, timestamp);
+        }
+    }
 }

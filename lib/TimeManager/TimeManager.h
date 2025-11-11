@@ -7,6 +7,7 @@ class TimeManager {
     private:
 
         time_t m_timestamp{};
+        unsigned long m_lastTimeCheck{};
 
     public:
 

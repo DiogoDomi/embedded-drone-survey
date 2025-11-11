@@ -3,8 +3,10 @@
 
 #include "GPSData.h"
 #include <cstdint>
+#include <time.h>
 
 struct TelemetryData {
+    time_t timestamp{};
     uint8_t state{};
     int8_t rssi{};
     GPSData gps{};

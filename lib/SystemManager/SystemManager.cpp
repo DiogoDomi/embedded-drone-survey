@@ -1,28 +1,32 @@
 #include "SystemManager.h"
-#include <time.h>
 
 namespace {
-    constexpr uint16_t DB_SEND_INTERVAL = 5000;
-    constexpr uint8_t WEB_SEND_INTERVAL = 100;
+    // constexpr uint16_t DB_INTERVAL = 5000;
+    constexpr uint16_t WEB_INTERVAL = 5000;
 }
-
-SystemManager::SystemManager() :   
-    m_server(80),
-    m_socket("/ws"),
-    m_wifi(),
-    m_web(m_server, m_socket),
-    m_imu(),
-    m_flight(m_imu),
-    m_gps(),
-    m_telemetry(m_wifi, m_gps, m_flight),
-    m_database(),
-    m_time()
-    {}
 
 SystemManager& SystemManager::getInstance() {
     static SystemManager instance;
     return instance;
 }
+
+SystemManager::SystemManager() :   
+    m_server(80),
+    m_socket("/ws"),
+
+    m_imu(),
+    m_wifi(),
+    m_gps(),
+    m_time(),
+    // m_database(),
+
+    m_flight(m_imu),
+    m_web(m_server, m_socket),
+    m_telemetry(m_wifi, m_gps, m_flight, m_time),
+
+    m_webPreviousTime(0)
+    // m_dbPreviousTime(0)
+    {}
 
 void SystemManager::setup() {
     m_flight.begin();
@@ -32,38 +36,41 @@ void SystemManager::setup() {
     m_wifi.begin();
     m_web.begin();
     m_time.begin();
-    m_database.begin();
-
-    m_telemetry.update();
-    m_web.cacheTelemetry(m_telemetry.getTelemetry());
+    // m_database.begin();
 }
 
 void SystemManager::loop() {
-    m_imu.update();
     m_web.update();
+
+    m_imu.update();
     bool hasStateChangeRequest = m_web.hasStateChangeRequest();
     JoystickData joystickData = m_web.getJoystickData();
     m_flight.update(hasStateChangeRequest, joystickData);
+
     m_wifi.update();
     m_gps.update();
     m_time.update();
-    m_telemetry.update();
 
     unsigned long currentTime = millis();
+    bool sendWeb = (currentTime - m_webPreviousTime >= WEB_INTERVAL);
+    // bool sendDb = (currentTime - m_dbPreviousTime >= DB_INTERVAL);
 
-    if (hasStateChangeRequest || currentTime - m_webPreviousTime >= WEB_SEND_INTERVAL) {
-        m_webPreviousTime = currentTime;
-        const TelemetryData telemetryData = m_telemetry.getTelemetry();
-        m_web.cacheTelemetry(telemetryData);
-        m_web.sendTelemetry(telemetryData);
-    }
+    if (hasStateChangeRequest || sendWeb) {
+        m_telemetry.update();
 
-    if (m_wifi.getWiFiStatus() == WL_CONNECTED && m_time.getTimestamp() > 1000) {
-        if (currentTime - m_dbPreviousTime >= DB_SEND_INTERVAL) {
-            m_dbPreviousTime = currentTime;
-            const TelemetryData telemetryData = m_telemetry.getTelemetry();
-            const time_t timestamp = m_time.getTimestamp();
-            m_database.sendDBData(telemetryData, timestamp);
+        TelemetryData telemetry = m_telemetry.getTelemetry();
+
+        if (hasStateChangeRequest || sendWeb) {
+            m_webPreviousTime = currentTime;
+            m_web.sendTelemetry(telemetry);
+            m_web.cacheTelemetry(telemetry);
         }
+
+        // if (sendDb) {
+        //     m_dbPreviousTime = currentTime;
+        //     if (m_wifi.getWiFiStatus() == WL_CONNECTED) {
+        //         m_database.sendDBData(telemetry);
+        //     }
+        // }
     }
 }

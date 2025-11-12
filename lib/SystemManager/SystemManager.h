@@ -7,7 +7,7 @@
 #include "FlightManager.h"
 #include "GPSManager.h"
 #include "TelemetryManager.h"
-#include "DatabaseManager.h"
+// #include "DatabaseManager.h"
 #include "TimeManager.h"
 
 class SystemManager {
@@ -15,17 +15,18 @@ class SystemManager {
         AsyncWebServer m_server;
         AsyncWebSocket m_socket;
 
-        WiFiManager m_wifi{};
-        WebManager m_web;
         IMUManager m_imu{};
-        FlightManager m_flight;
+        WiFiManager m_wifi{};
         GPSManager m_gps{};
-        TelemetryManager m_telemetry;
-        DatabaseManager m_database{};
         TimeManager m_time{};
+        // DatabaseManager m_database{};
+
+        FlightManager m_flight;
+        WebManager m_web;
+        TelemetryManager m_telemetry;
 
         unsigned long m_webPreviousTime{};
-        unsigned long m_dbPreviousTime{};
+        // unsigned long m_dbPreviousTime{};
 
     private:
 

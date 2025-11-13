@@ -1,7 +1,6 @@
 #ifndef FLIGHT_MANAGER_H_
 #define FLIGHT_MANAGER_H_
 
-#include <Servo.h>
 #include "IMUManager.h"
 #include "PIDManager.h"
 #include "State.h"
@@ -11,11 +10,6 @@ class FlightManager {
     private:
 
         IMUManager& m_imu;
-
-        Servo m_motorFL{}; // Motor 1
-        Servo m_motorFR{}; // Motor 2
-        Servo m_motorBR{}; // Motor 3
-        Servo m_motorBL{}; // Motor 4
 
         PIDManager m_pidY;
         PIDManager m_pidP;

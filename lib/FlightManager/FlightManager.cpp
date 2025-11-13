@@ -1,8 +1,12 @@
+#include <Arduino.h>
 #include "FlightManager.h"
 #include "Pins.h"
 
 namespace {
     namespace Pwm {
+        constexpr uint16_t FREQUENCY = 400;
+        constexpr uint16_t RANGE = 2500;
+
         constexpr uint16_t MAX = 2000;
         constexpr uint16_t MIN = 1000;
         constexpr uint16_t IDLE = 1100;
@@ -13,7 +17,7 @@ namespace {
     constexpr uint8_t JOYSTICK_DEADZONE = 3;
 
     constexpr float PR_ANGLE = 10.0F;
-    constexpr float Y_RATE = 200.0F;
+    constexpr float Y_RATE = 50.0F;
 
     constexpr float YAW_PID_SCALE = 1.0F;
     constexpr float PITCH_PID_SCALE = 1.0F;
@@ -47,25 +51,28 @@ void FlightManager::begin() {
 }
 
 void FlightManager::setupMotors() {
-    m_motorFL.attach(Pins::ESC::MOTOR_FL_PIN, Pwm::MIN, Pwm::MAX);
-    m_motorFR.attach(Pins::ESC::MOTOR_FR_PIN, Pwm::MIN, Pwm::MAX);
-    m_motorBR.attach(Pins::ESC::MOTOR_BR_PIN, Pwm::MIN, Pwm::MAX);
-    m_motorBL.attach(Pins::ESC::MOTOR_BL_PIN, Pwm::MIN, Pwm::MAX);
+    analogWriteFreq(Pwm::FREQUENCY);
+    analogWriteRange(Pwm::RANGE);
+
+    pinMode(Pins::ESC::MOTOR_FL_PIN, OUTPUT);
+    pinMode(Pins::ESC::MOTOR_FR_PIN, OUTPUT);
+    pinMode(Pins::ESC::MOTOR_BR_PIN, OUTPUT);
+    pinMode(Pins::ESC::MOTOR_BL_PIN, OUTPUT);
 }
 
 void FlightManager::setMotorState() {
     switch (m_currentState) {
         case State::DISARMED:
-            m_motorFL.writeMicroseconds(Pwm::MIN);
-            m_motorFR.writeMicroseconds(Pwm::MIN);
-            m_motorBR.writeMicroseconds(Pwm::MIN);
-            m_motorBL.writeMicroseconds(Pwm::MIN);
+            analogWrite(Pins::ESC::MOTOR_FL_PIN, Pwm::MIN);
+            analogWrite(Pins::ESC::MOTOR_FR_PIN, Pwm::MIN);
+            analogWrite(Pins::ESC::MOTOR_BR_PIN, Pwm::MIN);
+            analogWrite(Pins::ESC::MOTOR_BL_PIN, Pwm::MIN);
             break;
         case State::ARMED:
-            m_motorFL.writeMicroseconds(Pwm::IDLE);
-            m_motorFR.writeMicroseconds(Pwm::IDLE);
-            m_motorBR.writeMicroseconds(Pwm::IDLE);
-            m_motorBL.writeMicroseconds(Pwm::IDLE);
+            analogWrite(Pins::ESC::MOTOR_FL_PIN, Pwm::IDLE);
+            analogWrite(Pins::ESC::MOTOR_FR_PIN, Pwm::IDLE);
+            analogWrite(Pins::ESC::MOTOR_BR_PIN, Pwm::IDLE);
+            analogWrite(Pins::ESC::MOTOR_BL_PIN, Pwm::IDLE);
             break;
     }
 }
@@ -119,10 +126,10 @@ void FlightManager::writeMotors() {
     uint16_t motor_BR = static_cast<uint16_t>(constrain(motor_BR_F, Pwm::IDLE, Pwm::MAX));
     uint16_t motor_BL = static_cast<uint16_t>(constrain(motor_BL_F, Pwm::IDLE, Pwm::MAX));
 
-    m_motorFL.writeMicroseconds(motor_FL);
-    m_motorFR.writeMicroseconds(motor_FR);
-    m_motorBR.writeMicroseconds(motor_BR);
-    m_motorBL.writeMicroseconds(motor_BL);
+    analogWrite(Pins::ESC::MOTOR_FL_PIN, motor_FL);
+    analogWrite(Pins::ESC::MOTOR_FR_PIN, motor_FR);
+    analogWrite(Pins::ESC::MOTOR_BR_PIN, motor_BR);
+    analogWrite(Pins::ESC::MOTOR_BL_PIN, motor_BL);
 }
 
 void FlightManager::update(bool stateChangeRequested,const JoystickData& joystickData) {
@@ -152,15 +159,6 @@ State FlightManager::getStateData() const { return m_currentState; }
 // void FlightManager::printDebug() {
 //     if (millis() - m_previousDebugTime > DEBUG_PRINT_INTERVAL) {
 //         m_previousDebugTime = millis();
-
-//         Serial.print("M_FL : ");
-//         Serial.println(m_motorFL.readMicroseconds());
-//         Serial.print("M_FR : ");
-//         Serial.println(m_motorFR.readMicroseconds());
-//         Serial.print("M_BR : ");
-//         Serial.println(m_motorBR.readMicroseconds());
-//         Serial.print("M_BL : ");
-//         Serial.println(m_motorBL.readMicroseconds());
 
 //         Serial.print("Pitch : ");
 //         Serial.print(m_imuData.pitch);

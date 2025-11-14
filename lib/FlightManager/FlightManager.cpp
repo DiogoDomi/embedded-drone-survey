@@ -17,7 +17,7 @@ namespace {
     constexpr uint8_t JOYSTICK_DEADZONE = 3;
 
     constexpr float PR_ANGLE = 10.0F;
-    constexpr float Y_RATE = 150.0F;
+    constexpr float Y_RATE = 50.0F;
 
     constexpr float PR_CHANGE_PER_LOOP = 25.0F;
     constexpr float Y_CHANGE_PER_LOOP = 70.0F;

@@ -1,6 +1,5 @@
 #include "TelemetryManager.h"
 #include "Flags.h"
-#include <cmath>
 
 TelemetryManager::TelemetryManager(WiFiManager& wifi, GPSManager& gps, FlightManager& flight, TimeManager& time) :
     m_wifi(wifi),

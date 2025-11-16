@@ -8,7 +8,6 @@ class WiFiManager {
     private:
 
         int8_t m_rssiData{};
-        unsigned long m_lastRssiCheck{};
 
     private:
 

@@ -110,6 +110,7 @@ void FlightManager::mapJoystick(const JoystickData& joystickData) {
 
 void FlightManager::calculatePID() {
     if (m_deltaTime <= 0) { return; }
+
     m_actualGyroZ = m_imuData.gyroZ;
     m_actualPitch = m_imuData.pitch;
     m_actualRoll = m_imuData.roll;

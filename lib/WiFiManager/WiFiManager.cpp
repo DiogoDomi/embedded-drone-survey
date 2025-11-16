@@ -11,13 +11,10 @@ namespace {
 
     const char *STA_SSID = "LEO_2_4G";
     const char *STA_PSWD = "Leovegildocesar1#";
-
-    constexpr uint16_t RSSI_UPDATE_INTERVAL = 2000;
 }
 
 WiFiManager::WiFiManager() :
-    m_rssiData(Flags::WIFI_RSSI_INVALID),
-    m_lastRssiCheck(0)
+    m_rssiData(Flags::WIFI_RSSI_INVALID)
     {}
 
 void WiFiManager::begin() {
@@ -38,15 +35,10 @@ void WiFiManager::setupSTA() {
 }
 
 void WiFiManager::update() {
-    unsigned long currentTime = millis();
-
-    if (currentTime - m_lastRssiCheck >= RSSI_UPDATE_INTERVAL) {
-        m_lastRssiCheck = currentTime;
-        if (WiFi.status() == WL_CONNECTED) {
-            m_rssiData = WiFi.RSSI();
-        } else {
-            m_rssiData = Flags::WIFI_RSSI_INVALID;
-        }
+    if (WiFi.status() == WL_CONNECTED) {
+        m_rssiData = WiFi.RSSI();
+    } else {
+        m_rssiData = Flags::WIFI_RSSI_INVALID;
     }
 }
 

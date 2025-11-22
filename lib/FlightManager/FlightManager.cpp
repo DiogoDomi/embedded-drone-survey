@@ -22,9 +22,9 @@ namespace {
     constexpr float PR_CHANGE_PER_LOOP = 25.0F;
     constexpr float Y_CHANGE_PER_LOOP = 70.0F;
 
-    constexpr float YAW_PID_SCALE = 1.0F;
-    constexpr float PITCH_PID_SCALE = 1.0F;
-    constexpr float ROLL_PID_SCALE = 1.0F;
+    constexpr float YAW_PID_SCALE = 5.0F;
+    constexpr float PITCH_PID_SCALE = 5.0F;
+    constexpr float ROLL_PID_SCALE = 5.0F;
 
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 1;
 
@@ -41,9 +41,9 @@ namespace {
 FlightManager::FlightManager(IMUManager& imu) :
     m_imu(imu),
 
-    m_pidY(0.0F, 0.0F, 0.0F),
-    m_pidP(0.4F, 0.0F, 0.0F),
-    m_pidR(0.3F, 0.0F, 0.0F)
+    m_pidY(1.2F, 0.01F, 0.0F),
+    m_pidP(0.6F, 0.0F, 0.0F),
+    m_pidR(0.6F, 0.0F, 0.0F)
     {}
 
 void FlightManager::begin() {
@@ -110,6 +110,13 @@ void FlightManager::mapJoystick(const JoystickData& joystickData) {
 
 void FlightManager::calculatePID() {
     if (m_deltaTime <= 0) { return; }
+
+    if (m_throttleMap < (Pwm::IDLE + 50)) {
+        m_pidY.reset();
+        m_pidP.reset();
+        m_pidR.reset();
+
+    }
 
     m_actualGyroZ = m_imuData.gyroZ;
     m_actualPitch = m_imuData.pitch;

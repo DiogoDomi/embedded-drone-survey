@@ -1,12 +1,12 @@
 #ifndef TIME_MANAGER_H_
 #define TIME_MANAGER_H_
 
-#include <time.h>
+#include <cstdint>
 
 class TimeManager {
     private:
 
-        time_t m_timestamp{};
+        uint32_t m_timestamp{};
 
     public:
 
@@ -14,7 +14,7 @@ class TimeManager {
 
         void begin();
         void update();
-        time_t getTimestamp() const;
+        uint32_t getTimestamp() const;
 
 };
 

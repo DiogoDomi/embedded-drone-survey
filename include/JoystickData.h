@@ -4,7 +4,10 @@
 #include <cstdint>
 
 struct JoystickData {
-    int8_t lx{}, ly{}, rx{}, ry{};
+    int8_t lx{};
+    int8_t ly{};
+    int8_t rx{};
+    int8_t ry{};
 };
 
 #endif

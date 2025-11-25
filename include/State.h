@@ -4,7 +4,8 @@
 #include <cstdint>
 
 enum class State : uint8_t {
-    DISARMED = 0, ARMED = 1
+    DISARMED = 0,
+     ARMED = 1
 };
 
 #endif

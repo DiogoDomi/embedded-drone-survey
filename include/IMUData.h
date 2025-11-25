@@ -2,7 +2,12 @@
 #define IMU_DATA_H_
 
 struct IMUData {
-    float pitch{}, roll{}, yaw{}, gyroZ{};
+    float pitch{};
+    float roll{};
+    float yaw{};
+    float gyroX{};
+    float gyroY{};
+    float gyroZ{};
 };
 
 #endif

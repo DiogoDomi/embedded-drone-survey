@@ -1,5 +1,6 @@
 #include "TelemetryManager.h"
 #include "Flags.h"
+#include <cmath>
 
 TelemetryManager::TelemetryManager(WiFiManager& wifi, GPSManager& gps, FlightManager& flight, TimeManager& time, DatabaseManager& db) :
     m_wifi(wifi),
@@ -21,7 +22,7 @@ void TelemetryManager::update() {
 bool TelemetryManager::isTelemetryValid(const TelemetryData& telemetry) const {
     if (telemetry.timestamp < 1000) { return false; }
     if (telemetry.rssi == Flags::WIFI_RSSI_INVALID) { return false; }
-    if (std::fabs(telemetry.gps.lat - Flags::GPS_INVALID_LOCATION) < 0.00001F) { return false; }
-    if (std::fabs(telemetry.gps.alt - Flags::GPS_INVALID_ALTITUDE) < 0.00001F) { return false; }
+    if (telemetry.gps.lat == Flags::GPS_INVALID_LOCATION) { return false; }
+    if (telemetry.gps.alt == Flags::GPS_INVALID_ALTITUDE) { return false; }
     return true;
 }

@@ -11,7 +11,7 @@ struct TelemetryData {
     int8_t rssi{};
     GPSData gps{};
     bool isValid{};
-    uint16_t logsRemaining{};
+    uint8_t logsRemaining{};
 };
 
 #endif

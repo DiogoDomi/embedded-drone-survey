@@ -47,14 +47,3 @@ bool DatabaseManager::flush() {
 
     return true;
 }
-
-bool DatabaseManager::addTelemetry(const TelemetryData& telemetry) {
-    if (m_logsCount >= MAX_LOGS) {
-        return false;
-    }
-
-    m_logs[m_logsCount] = telemetry;
-    m_logsCount++;
-
-    return true;
-}

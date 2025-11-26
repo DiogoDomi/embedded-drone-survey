@@ -22,7 +22,15 @@ class DatabaseManager {
         DatabaseManager();
         void begin();
         bool flush();
-        bool addTelemetry(const TelemetryData& telemetry);
+
+        inline bool addTelemetry(const TelemetryData& telemetry) {
+            if (m_logsCount >= MAX_LOGS) {
+                return false;
+            }
+            m_logs[m_logsCount] = telemetry;
+            m_logsCount++;
+            return true;
+        }
 
         inline uint8_t getRemainingLogs() const {
             if (m_logsCount >= MAX_LOGS) return 0;

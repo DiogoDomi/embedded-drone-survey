@@ -3,6 +3,7 @@
 
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <Arduino.h>
 #include "JoystickData.h"
 #include "TelemetryData.h"
 
@@ -34,11 +35,30 @@ class WebManager {
 
         WebManager(AsyncWebServer& server, AsyncWebSocket& socket);
         void begin();
-        void update();
+
+        inline void update() {
+            m_socket.cleanupClients();
+        }
+
         void cacheTelemetry(const TelemetryData& telemetry);
         void sendTelemetry(const TelemetryData& telemetry);
-        bool hasStateChangeRequest();
-        JoystickData getJoystickData() const;
+
+        inline bool hasStateChangeRequest() {
+            noInterrupts();
+            bool requested = m_stateChangeRequested;
+            if (requested) {
+                m_stateChangeRequested = false;
+            }
+            interrupts();
+            return requested;
+        }
+
+        inline JoystickData getJoystickData() const { 
+            noInterrupts();
+            JoystickData tempData = m_joystickData;
+            interrupts();
+            return tempData;
+        }
 
 };
 

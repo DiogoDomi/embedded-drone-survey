@@ -9,8 +9,6 @@ WebManager::WebManager(AsyncWebServer& server, AsyncWebSocket& socket) :
 void WebManager::begin() {
     LittleFS.begin();
 
-    File f = LittleFS.open()
-
     setupServer();
     setupSocket();
 
@@ -65,6 +63,28 @@ void WebManager::onEventHandler(AsyncWebSocket* socket, AsyncWebSocketClient* cl
     }
 }
 
+void WebManager::handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
+    AwsFrameInfo* info = static_cast<AwsFrameInfo*>(arg);
+
+    if (info->final && info->index == 0 && info->len == len && info->opcode == AwsFrameType::WS_TEXT) {
+        m_requestDoc.clear();
+
+        DeserializationError docHasError =  deserializeJson(m_requestDoc, data, len);
+
+        if (docHasError) { return; }
+
+        noInterrupts();
+
+        if (!m_requestDoc["state"].isNull()) { m_stateChangeRequested = true; }
+        if (!m_requestDoc["lx"].isNull()) { m_joystickData.lx = m_requestDoc["lx"]; }
+        if (!m_requestDoc["ly"].isNull()) { m_joystickData.ly = m_requestDoc["ly"]; }
+        if (!m_requestDoc["rx"].isNull()) { m_joystickData.rx = m_requestDoc["rx"]; }
+        if (!m_requestDoc["ry"].isNull()) { m_joystickData.ry = m_requestDoc["ry"]; }
+
+        interrupts();
+    }
+}
+
 void WebManager::onConnectSendTelemetry(AsyncWebSocketClient* client) {
     if (!client || !client->canSend()) { return; }
 
@@ -77,60 +97,17 @@ void WebManager::onConnectSendTelemetry(AsyncWebSocketClient* client) {
     client->text(buffer);
 }
 
-void WebManager::handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
-    AwsFrameInfo* info = static_cast<AwsFrameInfo*>(arg);
-
-    if (info->final && info->index == 0 && info->len == len && info->opcode == AwsFrameType::WS_TEXT) {
-        m_requestDoc.clear();
-
-        DeserializationError docHasError =  deserializeJson(m_requestDoc, data, len);
-
-        if (docHasError || m_requestDoc.isNull()) { return; }
-
-        if (!m_requestDoc["state"].isNull()) { m_stateChangeRequested = true; }
-        if (!m_requestDoc["lx"].isNull()) { m_joystickData.lx = m_requestDoc["lx"]; }
-        if (!m_requestDoc["ly"].isNull()) { m_joystickData.ly = m_requestDoc["ly"]; }
-        if (!m_requestDoc["rx"].isNull()) { m_joystickData.rx = m_requestDoc["rx"]; }
-        if (!m_requestDoc["ry"].isNull()) { m_joystickData.ry = m_requestDoc["ry"]; }
-    }
-}
-
-void WebManager::update() {
-    m_socket.cleanupClients();
-}
-
 void WebManager::sendTelemetry(const TelemetryData& telemetry) {
     m_serializeDoc.clear();
-    memset(m_outputBuffer, '\0', JSON_TELEMETRY_SIZE);
 
-    m_serializeDoc["state"] = telemetry.state;
-    // m_serializeDoc["rssi"] = telemetry.rssi;
-    // m_serializeDoc["lat"] = telemetry.gps.lat;
-    // m_serializeDoc["lon"] = telemetry.gps.lon;
-    // m_serializeDoc["alt"] = telemetry.gps.alt;
+    m_serializeDoc["st"]    = static_cast<int>(telemetry.state);
+    // m_serializeDoc["mem"]   = telemetry.logsRemaining;
+    // m_serializeDoc["rssi"]  = telemetry.rssi;
+    // m_serializeDoc["lat"]   = telemetry.gps.lat;
+    // m_serializeDoc["lon"]   = telemetry.gps.lon;
+    // m_serializeDoc["alt"]   = telemetry.gps.alt;
 
-    serializeJson(m_serializeDoc, m_outputBuffer, JSON_TELEMETRY_SIZE);
+    size_t len = serializeJson(m_serializeDoc, m_outputBuffer, JSON_TELEMETRY_SIZE);
 
-    for (AsyncWebSocketClient client : m_socket.getClients()) {
-        if (client.status() == WS_CONNECTED && client.canSend()) {
-            client.text(m_outputBuffer);
-        }
-    }
-}
-
-bool WebManager::hasStateChangeRequest() {
-    noInterrupts();
-    bool requested = m_stateChangeRequested;
-    if (requested) {
-        m_stateChangeRequested = false;
-    }
-    interrupts();
-    return requested;
-}
-
-JoystickData WebManager::getJoystickData() const { 
-    noInterrupts();
-    JoystickData tempData = m_joystickData;
-    interrupts();
-    return tempData;
+    m_socket.textAll(m_outputBuffer, len);
 }

@@ -37,6 +37,7 @@ namespace {
     constexpr float BL_CORRECTION = 1218.0F/1218.0F;
 
     constexpr float JOY_TO_ANGLE_FACTOR = (PR_ANGLE * 2.0F) / 200.0F;
+    constexpr float JOY_TO_RATE_FACTOR  = (Y_RATE * 2.0F) / 200.0F;
 }
 
 FlightManager::FlightManager(IMUManager& imu) :
@@ -112,7 +113,7 @@ void FlightManager::mapJoystick(const JoystickData& joystickData) {
             static_cast<float>(Pwm::MAX_TEST)
         )
     );
-    // m_yawMap   = static_cast<float>(joystickData.lx) * JOY_TO_ANGLE_FACTOR;
+    // m_yawMap   = static_cast<float>(joystickData.lx) * JOY_TO_RATE_FACTOR;
     m_yawMap   = 0.0F;
     m_pitchMap = static_cast<float>(joystickData.ry) * JOY_TO_ANGLE_FACTOR;
     m_rollMap  = static_cast<float>(joystickData.rx) * JOY_TO_ANGLE_FACTOR;

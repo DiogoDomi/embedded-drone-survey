@@ -42,9 +42,9 @@ namespace {
 FlightManager::FlightManager(IMUManager& imu) :
     m_imu(imu),
 
-    m_pidYaw(1.2F, 0.01F, 0.0F),
-    m_pidPitch(0.6F, 0.0F, 0.0F),
-    m_pidRoll(0.6F, 0.0F, 0.0F)
+    m_pidYaw(3.0F, 0.0F, 0.0F),
+    m_pidPitch(1.0F, 0.0F, 0.05F),
+    m_pidRoll(1.0F, 0.0F, 0.05F)
     {}
 
 void FlightManager::begin() {

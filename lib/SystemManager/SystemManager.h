@@ -26,6 +26,7 @@ class SystemManager {
         TelemetryManager m_telemetry;
 
         unsigned long m_telemetryPreviousTime{};
+        unsigned long m_lastGPSLoop{};
 
     private:
 

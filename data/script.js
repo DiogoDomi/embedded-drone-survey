@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Received data: " + event.data);
         const myObj = JSON.parse(event.data);
 
-        if (myObj.state !== undefined) {
-            document.getElementById("state").innerHTML = DRONE_STATE[myObj.state];
+        if (myObj.st !== undefined) {
+            document.getElementById("state").innerHTML = DRONE_STATE[myObj.st];
         }
         if (myObj.rssi !== undefined) {
             document.getElementById("rssi").innerHTML = myObj.rssi;
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const stateBox = document.getElementById("stateBox");
     stateBox.addEventListener("click", () => {
-        const command = { ...joystickState, "state": true };
+        const command = { ...joystickState, "st": true };
         sendRequest(command);
     });
 

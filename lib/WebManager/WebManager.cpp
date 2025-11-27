@@ -75,7 +75,7 @@ void WebManager::handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
 
         noInterrupts();
 
-        if (!m_requestDoc["state"].isNull()) { m_stateChangeRequested = true; }
+        if (!m_requestDoc["st"].isNull()) { m_stateChangeRequested = true; }
         if (!m_requestDoc["lx"].isNull()) { m_joystickData.lx = m_requestDoc["lx"]; }
         if (!m_requestDoc["ly"].isNull()) { m_joystickData.ly = m_requestDoc["ly"]; }
         if (!m_requestDoc["rx"].isNull()) { m_joystickData.rx = m_requestDoc["rx"]; }

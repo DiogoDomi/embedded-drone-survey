@@ -9,13 +9,13 @@
 class FlightManager {
     private:
 
+        State m_currentState{};
+
         IMUManager& m_imu;
 
         PIDManager m_pidYaw;
         PIDManager m_pidPitch;
         PIDManager m_pidRoll;
-
-        State m_currentState{};
 
         IMUData m_imuData{};
 

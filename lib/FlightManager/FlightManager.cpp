@@ -41,6 +41,8 @@ namespace {
 }
 
 FlightManager::FlightManager(IMUManager& imu) :
+    m_currentState(State::DISARMED),
+
     m_imu(imu),
 
     m_pidYaw(3.0F, 0.0F, 0.0F),

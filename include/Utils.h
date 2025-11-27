@@ -1,29 +1,22 @@
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 
 #include <Arduino.h>
+#include <cmath>
 
 namespace Utils {
 
-    inline float fmap(float x, float in_min, float in_max, float out_min, float out_max) {
+    template <typename T>
+    inline T mMap(T x, T in_min, T in_max, T out_min, T out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    inline int imap(int x, int in_min, int in_max, int out_min, int out_max) {
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
-
-    inline float fConstrain(float x, float minVal, float maxVal) {
-        if (x < minVal) return minVal;
-        if (x > maxVal) return maxVal;
-        return x;
-    }
-
-    inline int iConstrain(int x, int minVal, int maxVal) {
-        if (x < minVal) return minVal;
-        if (x > maxVal) return maxVal;
+    template <typename T>
+    inline T mConstrain(T x, T minVal, T maxVal) {
+        if (x < minVal) { return minVal; }
+        if (x > maxVal) { return maxVal; }
         return x;
     }
 }
 
-#endif;
+#endif

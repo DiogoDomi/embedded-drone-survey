@@ -24,6 +24,6 @@ namespace Pins {
         inline constexpr uint8_t MOTOR_BR_PIN = 12;    // D6  | -> Motor 3
         inline constexpr uint8_t MOTOR_BL_PIN = 13;    // D7  | -> Motor 4
     }
-};
+}
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef _IMU_MANAGER_H_
-#define _IMU_MANAGER_H_
+#ifndef IMU_MANAGER_H_
+#define IMU_MANAGER_H_
 
 #include "IMUData.h"
 #include "MPU6050.h"

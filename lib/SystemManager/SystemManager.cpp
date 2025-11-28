@@ -29,21 +29,21 @@ SystemManager::SystemManager() :
     {}
 
 void SystemManager::setup() {
-    m_wifi.begin();
-    m_web.begin();
     m_flight.begin();
-
     m_telemetryPreviousTime = millis();
-
     while (millis() - m_telemetryPreviousTime < 4000) {
         yield();
     }
 
+    m_imu.begin();
+
     m_telemetry.update();
     m_web.updateCache(m_telemetry.getTelemetry());
 
+    m_wifi.begin();
+    m_web.begin();
+
     // m_gps.begin();
-    m_imu.begin();
     // m_time.begin();
     // m_db.begin();
 

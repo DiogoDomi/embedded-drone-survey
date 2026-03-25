@@ -9,8 +9,8 @@ namespace {
     const IPAddress AP_GATEWAY(192, 168, 4, 1);
     const IPAddress AP_SUBNET(255, 255, 255, 0);
 
-    const char *STA_SSID = "LEO_2_4G";
-    const char *STA_PSWD = "Leovegildocesar1#";
+    const char *STA_SSID = "SSID";
+    const char *STA_PSWD = "PASSWORD";
 }
 
 WiFiManager::WiFiManager() :
